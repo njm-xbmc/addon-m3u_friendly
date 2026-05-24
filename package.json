@@ -1,0 +1,15 @@
+{
+  "name": "m3u-iptv-addon-public",
+  "version": "1.0.0",
+  "description": "Addon Stremio M3U IPTV — versión pública con configuración por usuario",
+  "main": "addon.js",
+  "scripts": {
+    "start": "node addon.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
