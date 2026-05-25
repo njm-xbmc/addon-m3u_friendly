@@ -48,37 +48,17 @@ README.md       ← Esta guía
 
 ## 🚀 Deploy en Render
 
-### 1. Fork este repositorio
-
-Presiona **Fork** arriba a la derecha en GitHub.
-
-### 2. Crear Web Service en Render
-
-1. Ir a <https://render.com>
-1. New + → Web Service
-1. Conectar GitHub → seleccionar tu fork
-
-**Build Command:**
-
-```
-npm install
-```
-
-**Start Command:**
-
-```
-npm start
-```
-
-> No necesitas configurar ninguna variable de entorno — todo lo maneja el formulario.
+Solo necesitas presionar este boton y listo, el deploy se hace en automatico.
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u)
 
 ### 3. Abrir la URL del addon
 
 Cuando Render termine el deploy, abre:
 
 ```
-https://tu-addon.onrender.com/configure
+https://tu-addon.onrender.com/
 ```
+[Ejemplo](https://files.catbox.moe/n1sxhi.jpeg)
 
 Llena el formulario con tu lista M3U y tu TMDB Key, genera tu URL e instala en Stremio.
 
