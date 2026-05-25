@@ -1,4 +1,4 @@
-# 🎬 M3U IPTV Addon — Versión Pública
+# 🎬 M3U IPTV Addon — Versión Friendly
 
 ![Claude](https://img.shields.io/badge/Claude-Anthropic-black?style=for-the-badge&logo=anthropic&logoColor=white&color=CC785C)
 ![Render](https://img.shields.io/badge/Render-Deploy-black?style=for-the-badge&logo=render&logoColor=white&color=46E3B7)
