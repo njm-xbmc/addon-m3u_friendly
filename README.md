@@ -1,9 +1,9 @@
 # 🎬 M3U IPTV Addon — Versión Pública
 
+![Claude](https://img.shields.io/badge/Claude-Anthropic-black?style=for-the-badge&logo=anthropic&logoColor=white&color=CC785C)
 ![Render](https://img.shields.io/badge/Render-Deploy-black?style=for-the-badge&logo=render&logoColor=white&color=46E3B7)
 ![Node.js](https://img.shields.io/badge/Node.js-Runtime-black?style=for-the-badge&logo=nodedotjs&logoColor=white&color=339933)
 ![Stremio](https://img.shields.io/badge/Stremio-Addon-black?style=for-the-badge&logo=stremio&logoColor=white&color=8A2BE2)
- ![Claude](https://img.shields.io/badge/Claude-Anthropic-black?style=for-the-badge&logo=anthropic&logoColor=white&color=CC785C)
 
 Versión pública del addon M3U IPTV para Stremio. Cada usuario configura su propia lista M3U y TMDB Key desde la página web del addon — sin necesidad de tocar código ni variables de entorno.
 
