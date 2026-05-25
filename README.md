@@ -50,7 +50,7 @@ README.md       ← Esta guía
 
 Solo necesitas presionar este boton y listo, el deploy se hace en automatico.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
 ### 3. Abrir la URL del addon
 
