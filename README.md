@@ -72,7 +72,7 @@ El servicio nunca se duerme por inactividad pero el plan gratuito incluye solo $
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
-En render por el Blueprint es de pago pero tambien puedes hacerlo manualamente lo cual es gratuito, el plan gratuito es ilimitado, pero el servicio duerme tras 15 minutos de inactividad.
+En render por el Blueprint es de pago pero tambien puedes hacerlo manualmente lo cual es gratuito, el plan gratuito es ilimitado, pero el servicio duerme tras 15 minutos de inactividad.
 
 **Pasos:**
 
