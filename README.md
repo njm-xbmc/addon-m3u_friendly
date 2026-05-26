@@ -69,8 +69,7 @@ Solo necesitas presionar un boton y listo, el deploy en automatico.
 
 El servicio nunca se duerme por inactividad pero el plan gratuito incluye solo $5 de crédito al mes.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Esmequiinn/addon-m3u_friendly)
-
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?repository=https://github.com/Esmequiinn/addon-m3u_friendly)
 **O manualmente:**
 
 1. Ir a [https://railway.app](https://railway.app)
