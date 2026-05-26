@@ -98,12 +98,16 @@ npm start
 
 ### 3. Abrir la URL del addon
 
-Cuando Render termine el deploy, abre:
+Cuando termine el deploy, abre:
+
+```
+https://tu-addon.railway.app/
+```
 
 ```
 https://tu-addon.onrender.com/
 ```
-[![Ejemplo](https://files.catbox.moe/n1sxhi.jpeg)](https://files.catbox.moe/n1sxhi.jpeg)
+
 
 Llena el formulario con tu lista M3U y tu TMDB Key, genera tu URL e instala en Stremio.
 
@@ -127,6 +131,7 @@ El addon guarda en memoria la lista y los IDs resueltos de cada usuario.
 - El cache dura **6 horas** — después se recarga la lista automáticamente
 - Si el servidor se reinicia, el cache se borra y se reconstruye al primer request
 - En el plan gratuito de Render el servicio duerme tras 15 minutos de inactividad
+- Railway gratis: el servicio nunca duerme — el cache dura mucho más tiempo, pero tiene un límite de $5 de crédito al mes
 
 -----
 
@@ -138,3 +143,4 @@ El addon guarda en memoria la lista y los IDs resueltos de cada usuario.
 |Los IDs no se resuelven         |Verifica tu TMDB API Key en el formulario         |
 |Un título no aparece globalmente|Ábrelo desde el catálogo para forzar la resolución|
 |Render tarda en responder       |El plan gratuito duerme tras 15 min de inactividad|
+|Se agotó el credito de Railway  |El plan gratuito tiene $5/mes upgrade o cambia a render|
