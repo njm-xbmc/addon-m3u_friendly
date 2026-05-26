@@ -38,6 +38,7 @@ Cada usuario tiene su propia configuración completamente independiente y privad
 
 ```
 addon.js        ← Servidor Express con formulario y lógica del addon
+configure.html  ← Pagina web de configuración
 parse-m3u.js    ← Parser de listas M3U
 railway.json    ← Configuración para deploy en Railway
 render.yaml     ← Configuración para deploy en Render
