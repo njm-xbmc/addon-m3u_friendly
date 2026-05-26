@@ -147,6 +147,21 @@ El addon guarda en memoria la lista y los IDs resueltos de cada usuario.
 
 -----
 
+# 🛠 Procesamiento manual con clean-m3u.js (Opcional)
+Si prefieres tener los IDs resueltos desde el primer segundo sin esperar la pre-carga automática del addon, puedes usar el script ```clean-m3u.js```
+para procesar tu lista manualmente antes de subirla.
+
+[Descargar clean-m3u.js](https://github.com/Esmequiinn/addon-m3u/releases/download/IMDBCD/clean-m3u.js)
+
+Este script:
+
+* limpia títulos automáticamente
+* detecta películas y series
+* busca metadata usando TMDB
+* agrega IMDb IDs reales (`tvg-id="tt1234567"`)
+* guarda progreso automáticamente
+* permite continuar después sin perder avance
+
 ## ❓ Problemas comunes
 
 |Problema                        |Solución                                          |
