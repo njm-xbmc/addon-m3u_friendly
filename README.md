@@ -90,7 +90,7 @@ npm install
 npm start
 ```
 
-4. Abrir la URL que Render genera → `/configure`
+4. Abrir la URL que Render genera 
 
 > No necesitas configurar ninguna variable de entorno en Render — todo lo maneja el formulario del addon.
 
