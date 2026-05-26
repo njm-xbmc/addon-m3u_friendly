@@ -53,7 +53,7 @@ Elige la plataforma que prefieras:
 
 Solo necesitas presionar un boton y listo, el deploy en automatico.
 
-### Opción 1 — Railway (Recomendado)
+### Opción 1 — Railway
 
 El servicio nunca se duerme por inactividad.
 
