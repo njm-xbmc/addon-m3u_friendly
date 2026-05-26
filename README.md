@@ -57,7 +57,7 @@ Solo necesitas presionar un boton y listo, el deploy en automatico.
 
 El servicio nunca se duerme por inactividad.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/Esmequiinn/addon-m3u_friendly)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Esmequiinn/addon-m3u_friendly)
 
 **O manualmente:**
 
