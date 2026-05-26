@@ -48,13 +48,52 @@ README.md       ← Esta guía
 
 ## 🚀 Deploy
 
-Solo necesitas presionar este boton y listo, el deploy se hace en automatico.
+Elige la plataforma que prefieras:
+
+Solo necesitas presionar un boton y listo, el deploy en automatico.
+
+### Opción 1 — Railway (Recomendado)
+
+El servicio nunca se duerme por inactividad.
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/Esmequiinn/addon-m3u_friendly)
+
+**O manualmente:**
+
+1. Ir a [https://railway.app](https://railway.app)
+2. New Project → Deploy from GitHub repo
+3. Seleccionar tu fork
+4. Railway detecta automáticamente Node.js y corre `npm install` y `npm start`
+5. En Variables agregar si quieres un puerto fijo: `PORT = 7000`
+6. Abrir la URL que Railway genera → `/configure`
+
+### Opción 2 — Render
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
-En render por el Blueprint es de pago pero tambien puedes usar Railway que es gratis
+En render por el Blueprint es de pago pero tambien puedes hacerlo manualamente lo cual es gratuito, el plan gratuito es ilimitado, pero el servicio duerme tras 15 minutos de inactividad.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/Esmequiinn/addon-m3u_friendly)
+**Pasos:**
+
+1. Ir a [https://render.com](https://render.com)
+2. New + → Web Service
+3. Conectar GitHub → seleccionar tu fork
+
+**Build Command:**
+```
+npm install
+```
+
+**Start Command:**
+```
+npm start
+```
+
+4. Abrir la URL que Render genera → `/configure`
+
+> No necesitas configurar ninguna variable de entorno en Render — todo lo maneja el formulario del addon.
+
+---
 
 ### 3. Abrir la URL del addon
 
@@ -63,7 +102,7 @@ Cuando Render termine el deploy, abre:
 ```
 https://tu-addon.onrender.com/
 ```
-[Ejemplo](https://files.catbox.moe/n1sxhi.jpeg)
+[![Ejemplo](https://files.catbox.moe/n1sxhi.jpeg)](https://files.catbox.moe/n1sxhi.jpeg)
 
 Llena el formulario con tu lista M3U y tu TMDB Key, genera tu URL e instala en Stremio.
 
