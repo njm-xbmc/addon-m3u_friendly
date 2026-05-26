@@ -321,16 +321,17 @@ app.get("/:config/stream/:type/:id.json", async (req, res) => {
 // ─────────────────────────────────────────────
 
 const CONFIGURE_HTML = `<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M3U IPTV – Configurar Addon</title>
+  <title>M3U IPTV – Setup</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0d0d1a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0d0d0d;
       color: #e0e0e0;
       min-height: 100vh;
       display: flex;
@@ -338,152 +339,320 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       justify-content: center;
       padding: 24px;
     }
-    .card {
-      background: #13132a;
-      border: 1px solid #1e1e3f;
-      border-radius: 16px;
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 520px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+
+    .card { width: 100%; max-width: 480px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
     }
-    .logo-wrap { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
-    .logo-box {
-      width: 56px; height: 56px;
-      background: linear-gradient(135deg, #1a1a2e, #0f3460);
-      border-radius: 12px;
+
+    .logo {
+      width: 44px; height: 44px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 900;
-      border: 1px solid rgba(0,212,255,0.2);
-      color: #00d4ff; letter-spacing: -0.5px;
+      font-size: 11px; font-weight: 900; color: #00d4ff; flex-shrink: 0;
     }
-    .logo-text h1 { font-size: 20px; font-weight: 700; color: #fff; }
-    .logo-text p  { font-size: 13px; color: #666; margin-top: 2px; }
-    .divider { border: none; border-top: 1px solid #1e1e3f; margin-bottom: 28px; }
+
+    .header h1 { font-size: 18px; font-weight: 600; color: #fff; }
+    .header p  { font-size: 13px; color: #555; margin-top: 2px; }
+
+    .tabs {
+      display: flex;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 24px;
+      gap: 3px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #555;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .tab.active {
+      background: #1e1e1e;
+      color: #fff;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .field { margin-bottom: 18px; }
+
     label {
-      display: block; font-size: 13px; font-weight: 600;
-      color: #aaa; margin-bottom: 6px;
-      text-transform: uppercase; letter-spacing: 0.5px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
     }
-    label span { color: #e05a5a; margin-left: 2px; }
-    label .opt { color: #555; font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 12px; }
-    textarea, input[type="text"], input[type="password"] {
+
+    .tag {
+      font-size: 10px; font-weight: 500;
+      color: #444; text-transform: none; letter-spacing: 0;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 4px; padding: 1px 6px;
+    }
+
+    .tag.req { color: #e05a5a; border-color: #3a1a1a; background: #1f0f0f; }
+
+    textarea, input[type="text"], input[type="password"], input[type="url"] {
       width: 100%;
-      background: #0a0a18;
-      border: 1px solid #1e1e3f;
+      background: #111;
+      border: 1px solid #222;
       border-radius: 8px;
       color: #e0e0e0;
-      font-size: 14px;
+      font-size: 13px;
       padding: 10px 12px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s;
       font-family: inherit;
-      resize: vertical;
     }
-    textarea { min-height: 90px; }
-    textarea:focus, input:focus { border-color: #00d4ff; }
-    .hint { font-size: 12px; color: #555; margin-top: 5px; margin-bottom: 18px; }
-    .hint a { color: #00a0cc; text-decoration: none; }
-    .hint a:hover { text-decoration: underline; }
+
+    textarea { resize: none; height: 88px; }
+    textarea:focus, input:focus { border-color: #333; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .hint { font-size: 12px; color: #444; margin-top: 5px; line-height: 1.5; }
+    .hint a { color: #555; text-decoration: underline; }
+    .hint a:hover { color: #888; }
+
+    .example {
+      font-family: monospace; font-size: 11px; color: #555;
+      background: #0a0a0a; border: 1px solid #1a1a1a;
+      border-radius: 6px; padding: 8px 10px; margin-top: 6px; line-height: 1.6;
+    }
+
+    .divider { border: none; border-top: 1px solid #1a1a1a; margin: 20px 0; }
+
+    .section-label {
+      font-size: 11px; color: #444; text-transform: uppercase;
+      letter-spacing: 0.6px; margin-bottom: 14px;
+    }
+
     .btn {
       width: 100%;
-      background: linear-gradient(135deg, #0077ff, #00d4ff);
-      color: #fff; border: none; border-radius: 8px;
-      padding: 12px 20px; font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, transform 0.1s; margin-top: 6px;
+      background: #fff; color: #000; border: none;
+      border-radius: 8px; padding: 11px 20px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.15s; margin-top: 4px;
+      font-family: inherit;
     }
-    .btn:hover { opacity: 0.9; }
-    .btn:active { transform: scale(0.98); }
-    .result-box {
-      display: none; margin-top: 24px;
-      background: #0a0a18; border: 1px solid #1e1e3f;
-      border-radius: 10px; padding: 16px;
+
+    .btn:hover { opacity: 0.85; }
+    .btn:active { opacity: 0.7; }
+
+    .result {
+      display: none; margin-top: 20px;
+      background: #111; border: 1px solid #1e1e1e;
+      border-radius: 10px; padding: 14px;
     }
-    .result-label { font-size: 12px; color: #666; margin-bottom: 8px; }
+
+    .result-label {
+      font-size: 11px; color: #444; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+
     .url-row { display: flex; gap: 8px; }
+
     .url-row input {
-      flex: 1; font-family: monospace; font-size: 12px;
-      background: #060610; color: #00d4ff; min-width: 0;
+      flex: 1; background: #0a0a0a; border: 1px solid #1a1a1a;
+      border-radius: 7px; color: #00d4ff;
+      font-family: monospace; font-size: 11px; padding: 8px 10px;
+      outline: none; min-width: 0;
     }
+
     .url-row button {
-      background: #1e1e3f; border: 1px solid #2a2a5a;
-      color: #e0e0e0; border-radius: 7px; padding: 0 14px;
-      font-size: 13px; cursor: pointer; transition: background 0.2s; white-space: nowrap;
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #aaa;
+      border-radius: 7px; padding: 0 14px; font-size: 12px;
+      cursor: pointer; transition: background 0.15s; white-space: nowrap;
+      font-family: inherit;
     }
-    .url-row button:hover { background: #2a2a5a; }
-    .install-btn {
-      display: block; text-align: center; margin-top: 12px;
-      background: #7c3aed; color: #fff; text-decoration: none;
-      border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 600;
-      transition: opacity 0.2s;
+
+    .url-row button:hover { background: #222; color: #fff; }
+
+    .install {
+      display: block; text-align: center; margin-top: 10px;
+      background: #6d28d9; color: #fff; text-decoration: none;
+      border-radius: 7px; padding: 9px; font-size: 13px; font-weight: 600;
+      transition: opacity 0.15s;
     }
-    .install-btn:hover { opacity: 0.85; }
+
+    .install:hover { opacity: 0.85; }
+
     .error {
-      background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.3);
-      border-radius: 8px; padding: 10px 14px; font-size: 13px;
-      color: #e05a5a; display: none; margin-top: 10px;
+      background: #1a0a0a; border: 1px solid #3a1a1a; border-radius: 7px;
+      padding: 9px 12px; font-size: 12px; color: #e05a5a;
+      display: none; margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo-wrap">
-      <div class="logo-box">M3U</div>
-      <div class="logo-text">
-        <h1>M3U IPTV Addon</h1>
-        <p>Para Stremio — configuración personal</p>
+
+    <div class="header">
+      <div class="logo">M3U</div>
+      <div>
+        <h1>M3U IPTV</h1>
+        <p>Stremio Addon</p>
       </div>
     </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('m3u')">M3U Playlist</button>
+      <button class="tab" onclick="switchTab('xtream')">Xtream Codes</button>
+    </div>
+
+    <!-- PANEL: M3U -->
+    <div class="panel active" id="panel-m3u">
+      <div class="field">
+        <label>Playlist URL <span class="tag req">required</span></label>
+        <textarea id="m3uUrls" placeholder="https://yourprovider.com/playlist.m3u&#10;https://another-provider.com/list.m3u"></textarea>
+        <div class="example">
+          One URL per line, or separated by commas<br><br>
+          https://provider.com/get.php?username=john&password=1234&type=m3u_plus<br>
+          https://iptv-service.com/john/mysecretpass/playlist.m3u
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL: XTREAM -->
+    <div class="panel" id="panel-xtream">
+      <div class="field">
+        <label>Server URL <span class="tag req">required</span></label>
+        <input type="url" id="xtreamServer" placeholder="http://yourprovider.com:8080">
+        <p class="hint">The server address your provider gave you — include the port if any.</p>
+      </div>
+      <div class="field row-2">
+        <div>
+          <label>Username <span class="tag req">required</span></label>
+          <input type="text" id="xtreamUser" placeholder="john123">
+        </div>
+        <div>
+          <label>Password <span class="tag req">required</span></label>
+          <input type="password" id="xtreamPass" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="example">
+        Your provider will give you these 3 things.<br>
+        Example server: http://iptv-service.com:8080<br>
+        The addon will build your M3U URL automatically.
+      </div>
+    </div>
+
     <hr class="divider">
-    <label>URLs de tu lista M3U <span>*</span></label>
-    <textarea id="m3uUrls" placeholder="https://tu-lista.m3u&#10;https://otra-lista.m3u"></textarea>
-    <p class="hint">Una URL por línea o separadas por coma. Debe ser un enlace directo al archivo .m3u</p>
-    <label>TMDB API Key <span class="opt">(Opcional — recomendado)</span></label>
-    <input type="password" id="tmdbKey" placeholder="ej: abc123def456...">
-    <p class="hint">
-      Necesaria para que el contenido aparezca con pósters y metadata en Stremio.
-      Consíguela gratis en <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a>
-    </p>
-    <button class="btn" onclick="generate()">🔗 Generar URL de instalación</button>
+
+    <!-- TMDB — shared -->
+    <p class="section-label">Optional — recommended</p>
+    <div class="field">
+      <label>TMDB API Key <span class="tag">optional</span></label>
+      <input type="password" id="tmdbKey" placeholder="e.g. a1b2c3d4e5f6...">
+      <p class="hint">
+        Matches your content with Stremio's global catalog — posters, descriptions, ratings.
+        Free key at <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a>
+      </p>
+    </div>
+
+    <button class="btn" onclick="generate()">Generate install URL →</button>
+
     <div class="error" id="errorMsg"></div>
-    <div class="result-box" id="resultBox">
-      <p class="result-label">📋 Copia esta URL y pégala en Stremio → Addons → Install from URL</p>
+
+    <div class="result" id="result">
+      <p class="result-label">Your personal install URL</p>
       <div class="url-row">
         <input type="text" id="manifestUrl" readonly>
-        <button id="copyBtn" onclick="copyUrl()">Copiar</button>
+        <button id="copyBtn" onclick="copyUrl()">Copy</button>
       </div>
-      <a class="install-btn" id="stremioLink" href="#">▶ Instalar en Stremio</a>
+      <a class="install" id="stremioLink" href="#">Open in Stremio</a>
     </div>
+
   </div>
+
   <script>
-    function showError(msg) {
-      const el = document.getElementById("errorMsg");
-      el.textContent = msg;
-      el.style.display = "block";
+    let activeTab = 'm3u';
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'm3u') || (i === 1 && tab === 'xtream'));
+      });
+      document.getElementById('panel-m3u').classList.toggle('active', tab === 'm3u');
+      document.getElementById('panel-xtream').classList.toggle('active', tab === 'xtream');
+      document.getElementById('errorMsg').style.display = 'none';
+      document.getElementById('result').style.display = 'none';
     }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
     function generate() {
-      document.getElementById("errorMsg").style.display = "none";
-      const rawUrls = document.getElementById("m3uUrls").value.trim();
-      const tmdbKey = document.getElementById("tmdbKey").value.trim();
-      if (!rawUrls) return showError("⚠️ Debes ingresar al menos una URL de lista M3U");
-      const m3uUrls = rawUrls.split(/[\n,]+/).map(u => u.trim()).filter(u => u.startsWith("http"));
-      if (!m3uUrls.length) return showError("⚠️ Ninguna URL válida. Deben comenzar con http:// o https://");
+      document.getElementById('errorMsg').style.display = 'none';
+      document.getElementById('result').style.display = 'none';
+
+      const tmdbKey = document.getElementById('tmdbKey').value.trim();
+      let m3uUrls = [];
+
+      if (activeTab === 'm3u') {
+        const raw = document.getElementById('m3uUrls').value.trim();
+        if (!raw) return showError('Please enter at least one M3U URL.');
+        m3uUrls = raw.split(/[\\n,]+/).map(u => u.trim()).filter(u => u.startsWith('http'));
+        if (!m3uUrls.length) return showError('No valid URLs found. They must start with http:// or https://');
+
+      } else {
+        const server = document.getElementById('xtreamServer').value.trim().replace(/\\/$/, '');
+        const user   = document.getElementById('xtreamUser').value.trim();
+        const pass   = document.getElementById('xtreamPass').value.trim();
+        if (!server) return showError('Please enter the server URL.');
+        if (!user)   return showError('Please enter your username.');
+        if (!pass)   return showError('Please enter your password.');
+        if (!server.startsWith('http')) return showError('Server URL must start with http:// or https://');
+        m3uUrls = [\`\${server}/get.php?username=\${encodeURIComponent(user)}&password=\${encodeURIComponent(pass)}&type=m3u_plus&output=ts\`];
+      }
+
       const config = { m3uUrls };
       if (tmdbKey) config.tmdbApiKey = tmdbKey;
+
       const encoded = btoa(JSON.stringify(config));
-      const url = window.location.origin + "/" + encoded + "/manifest.json";
-      document.getElementById("manifestUrl").value = url;
-      document.getElementById("stremioLink").href  = "stremio://" + url.replace(/^https?:\/\//, "");
-      document.getElementById("resultBox").style.display = "block";
-      document.getElementById("resultBox").scrollIntoView({ behavior: "smooth" });
+      const url     = window.location.origin + '/' + encoded + '/manifest.json';
+
+      document.getElementById('manifestUrl').value = url;
+      document.getElementById('stremioLink').href  = 'stremio://' + url.replace(/^https?:\\/\\//, '');
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
     }
+
     function copyUrl() {
-      const input = document.getElementById("manifestUrl");
+      const input = document.getElementById('manifestUrl');
       input.select();
       navigator.clipboard.writeText(input.value).then(() => {
-        const btn = document.getElementById("copyBtn");
-        btn.textContent = "✅ Copiado";
-        setTimeout(() => { btn.textContent = "Copiar"; }, 2000);
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied ✓';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
       });
     }
   </script>
@@ -495,5 +664,5 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
 // ─────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
+  console.log(\`🚀 M3U IPTV corriendo en http://localhost:\${PORT}\`);
 });
