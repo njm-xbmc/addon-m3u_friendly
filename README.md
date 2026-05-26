@@ -8,8 +8,6 @@
 
 Versión pública del addon M3U IPTV para Stremio. Cada usuario configura su propia lista M3U y TMDB Key desde la página web del addon — sin necesidad de tocar código ni variables de entorno.
 
-> ¿Prefieres montarlo tú solo en Render con tu propia configuración? → [addon-m3u (versión personal)](https://github.com/Esmequiinn/addon-m3u)
-
 -----
 
 ## 🚀 Cómo funciona
