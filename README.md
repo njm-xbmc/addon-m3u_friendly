@@ -53,6 +53,7 @@ Solo necesitas presionar este boton y listo, el deploy se hace en automatico.
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
 En render por el Blueprint es de pago pero tambien puedes usar Railway que es gratis
+
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/Esmequiinn/addon-m3u_friendly)
 
 ### 3. Abrir la URL del addon
