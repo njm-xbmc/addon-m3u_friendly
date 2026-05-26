@@ -46,7 +46,7 @@ README.md       ← Esta guía
 
 -----
 
-## 🚀 Deploy en Render
+## 🚀 Deploy
 
 Solo necesitas presionar este boton y listo, el deploy se hace en automatico.
 
