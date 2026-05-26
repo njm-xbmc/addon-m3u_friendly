@@ -34,7 +34,7 @@ Cada usuario tiene su propia configuración completamente independiente y privad
 
 -----
 
-El addon resuelve los IDs de IMDb directamente en Render sin necesidad de modificar tu lista M3U manualmente.
+El addon resuelve los IDs de IMDb directamente en Render/Railway sin necesidad de modificar tu lista M3U manualmente.
 Al arrancar, lanza en segundo plano un proceso que recorre todas las películas y series y consulta TMDB para obtener su ID de IMDb real (tt...).
 Este proceso usa un límite de ~3 consultas por segundo para no rebasar el límite gratuito de TMDB. Según el tamaño de tu lista puede tardar varios minutos. Durante ese tiempo el catálogo ya está disponible y funciona normalmente.
 Si la pre-carga aún no ha llegado a un título concreto, el addon lo resuelve en el momento en que abres ese título directamente desde el catálogo "Mis Películas" o "Mis Series".
