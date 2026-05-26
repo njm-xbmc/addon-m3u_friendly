@@ -51,11 +51,11 @@ README.md       ← Esta guía
 
 Elige la plataforma que prefieras:
 
-Solo necesitas presionar un boton y listo, el deploy en automatico.
+Solo necesitas presionar un boton y listo, el deploy en automatico. 
 
 ### Opción 1 — Railway
 
-El servicio nunca se duerme por inactividad.
+El servicio nunca se duerme por inactividad pero el plan gratuito incluye solo $5 de crédito al mes.
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Esmequiinn/addon-m3u_friendly)
 
