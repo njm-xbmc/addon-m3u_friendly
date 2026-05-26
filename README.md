@@ -162,6 +162,255 @@ Este script:
 * guarda progreso automáticamente
 * permite continuar después sin perder avance
 
+---
+
+# Instalar dependencias
+
+```bash id="lci4m4"
+npm install axios
+```
+
+---
+
+# Configurar el script
+
+Abre:
+
+```txt id="lci4m5"
+clean-m3u.js
+```
+
+y reemplaza:
+
+```js id="lci4m6"
+const API_KEY = "PON_TU_TMDB_API_KEY";
+```
+
+por tu API real:
+
+```js id="lci4m7"
+const API_KEY = "TU_API_KEY";
+```
+
+---
+
+# Ejecutar el script
+
+Coloca tu lista M3U como:
+
+```txt id="lci4m8"
+lista.m3u
+```
+
+Luego ejecuta:
+
+```bash id="lci4m9"
+node clean-m3u.js
+```
+
+---
+
+# 💾 Guardado automático
+
+El script:
+
+* guarda progreso automáticamente
+* crea backups
+* permite cerrar con `CTRL + C`
+* continúa donde quedó la próxima vez
+
+---
+
+# Compatibilidad de series
+
+El script detecta automáticamente:
+
+```txt id="lci4ma"
+S01E01
+S02E05
+etc
+```
+
+y usa el IMDb ID correcto de toda la serie.
+
+---
+
+# Resultado esperado
+
+Antes:
+
+```txt id="lci4mb"
+#EXTINF:-1 tvg-name="Breaking Bad S01E01",Breaking Bad S01E01
+```
+
+Después:
+
+```txt id="lci4mc"
+#EXTINF:-1 tvg-name="Breaking Bad" tvg-id="tt0903747",Breaking Bad
+```
+
+---
+
+# 🌐 Usar tu lista M3U procesada en Render
+
+Después de agregar los IMDb IDs a tu lista local usando `clean-m3u.js`, necesitarás subir el archivo `.m3u` a un servicio que permita acceso mediante enlace directo.
+
+El addon descargará automáticamente la lista desde esa URL cada vez que Render inicie.
+
+---
+
+# Servicios recomendados
+
+Puedes alojar tu lista M3U en:
+
+- GitHub Releases
+- Dropbox
+- Google Drive
+- Servidor VPS
+- Hosting web
+- CDN
+- Servidores IPTV propios
+
+---
+
+# 🔗 Importante: la URL debe ser DIRECTA
+
+El addon necesita una URL que descargue el archivo directamente.
+
+Ejemplo correcto:
+
+```txt
+https://servidor.com/lista.m3u
+```
+Ejemplo incorrecto:
+```txt
+https://drive.google.com/file/d/xxxxx/view
+```
+Porque esa URL abre una página web y NO el archivo directamente.
+
+# GitHub Releases (Recomendado)
+
+La forma más estable y sencilla de alojar tu lista M3U es usando GitHub Releases.
+
+## Pasos
+
+1. Subir tu archivo:
+
+```txt
+lista-progress.m3u
+```
+
+a tu repositorio.
+
+2. Ir a:
+
+```txt
+Releases → Create Release
+```
+
+3. Adjuntar el archivo `.m3u`
+
+4. Publicar la release
+
+5. Copiar el enlace directo del archivo
+
+Ejemplo:
+
+```txt
+https://github.com/usuario/repo/releases/download/iptv/lista-progress.m3u
+```
+
+---
+
+# ☁ Google Drive
+
+Google Drive también funciona, pero debes convertir el enlace compartido en un enlace directo de descarga.
+
+## Obtener enlace directo
+
+Tu enlace normal se verá así:
+
+```txt
+https://drive.google.com/file/d/FILE_ID/view
+```
+
+Debes extraer el `FILE_ID` y convertirlo a:
+
+```txt
+https://drive.google.com/uc?export=download&id=FILE_ID
+```
+
+---
+
+# ☁ Dropbox
+
+En Dropbox:
+
+1. Compartir archivo
+2. Copiar enlace
+
+El enlace normalmente termina en:
+
+```txt
+?dl=0
+```
+
+Debes cambiarlo por:
+
+```txt
+?dl=1
+```
+
+o:
+
+```txt
+?raw=1
+```
+
+para forzar descarga directa.
+
+---
+
+# Resultado final
+
+Cuando Render inicie:
+
+- descargará automáticamente la lista
+- parseará películas y series
+- detectará streams
+- agrupará episodios
+- cargará IMDb IDs
+- integrará los streams directamente en Stremio
+
+---
+
+
+# 📁 Archivos usados por el script
+
+| Archivo              | Descripción                        |
+| -------------------- | ---------------------------------- |
+| `lista.m3u`          | Lista original (nunca se modifica) |
+| `lista-progress.m3u` | Lista procesada con IMDb IDs       |
+| `lista-backup.m3u`   | Backup automático                  |
+
+
+
+# 🔄 Actualizar la lista
+
+Solo necesitas actualizar el archivo M3U remoto.
+
+Render descargará automáticamente la lista al reiniciar el servicio.
+
+Para reiniciar:
+
+1. Ve a Render
+2. Abre tu Web Service
+3. Presiona:
+   - Manual Deploy
+   - Deploy latest commit
+
+---
+
 ## ❓ Problemas comunes
 
 |Problema                        |Solución                                          |
