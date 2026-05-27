@@ -322,7 +322,7 @@ app.get("/manifest.json", (req, res) => {
     name: "M3U IPTV",
 
     description:
-      "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio.",
+      "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio. Auto-resolves IMDb IDs via TMDB. By (reddit.com/user/Thin-Soil-4159) | GitHub: github.com/Esmequiinn",
 
     logo:
       "https://raw.githubusercontent.com/Esmequiinn/addon-m3u_friendly/main/logo.svg",
@@ -391,7 +391,7 @@ app.get("/:config/manifest.json", (req, res) => {
     name: "M3U IPTV",
 
     description:
-      "Reproduce tu lista M3U personal en Stremio.",
+      "Reproduce tu lista M3U personal en Stremio con IDs IMDb automáticos | By (reddit.com/user/Thin-Soil-4159) | GitHub: github.com/Esmequiinn",
 
     logo: LOGO,
 
