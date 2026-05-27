@@ -177,7 +177,7 @@ app.get("/manifest.json", (req, res) => {
     id:          "com.m3uiptv.public",
     version:     "1.0.0",
     name:        "M3U IPTV",
-    description: "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio. Auto-resolves IMDb IDs via TMDB.",
+    description: "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio. Auto-resolves IMDb IDs via TMDB. | By u/Thin-Soil-4159 (reddit.com/user/Thin-Soil-4159) | GitHub: github.com/Esmequiinn",
     logo:        "https://raw.githubusercontent.com/Esmequiinn/addon-m3u_friendly/main/logo.svg",
     resources:   ["catalog", "stream", "meta"],
     types:       ["movie", "series"],
@@ -199,6 +199,10 @@ app.get("/manifest.json", (req, res) => {
       configurable:          true,
       configurationRequired: true,
       configureUrl:          `${baseUrl}/configure`
+    },
+    stremioAddonsConfig: {
+      issuer:    "https://stremio-addons.net",
+      signature: "PEGA_AQUI_TU_SIGNATURE_COMPLETA"
     }
   });
 });
@@ -216,7 +220,7 @@ app.get("/:config/manifest.json", (req, res) => {
     id:          "com.m3uiptv.public",
     version:     "1.0.0",
     name:        "M3U IPTV",
-    description: "Reproduce tu lista M3U personal en Stremio con IDs IMDb automáticos",
+    description: "Reproduce tu lista M3U personal en Stremio con IDs IMDb automáticos | By u/Thin-Soil-4159 (reddit.com/user/Thin-Soil-4159) | GitHub: github.com/Esmequiinn",
     logo:        LOGO,
     resources:   ["catalog", "stream", "meta"],
     types:       ["movie", "series"],
@@ -237,6 +241,10 @@ app.get("/:config/manifest.json", (req, res) => {
     behaviorHints: {
       configurable:  true,
       configureUrl:  `${baseUrl}/configure`
+    },
+    stremioAddonsConfig: {
+      issuer:    "https://stremio-addons.net",
+      signature: "PEGA_AQUI_TU_SIGNATURE_COMPLETA"
     }
   });
 });
@@ -652,18 +660,18 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       if (activeTab === 'm3u') {
         const raw = document.getElementById('m3uUrls').value.trim();
         if (!raw) return showError('Please enter at least one M3U URL.');
-        m3uUrls = raw.split(/[\\n,]+/).map(u => u.trim()).filter(u => u.startsWith('http'));
+        m3uUrls = raw.split(/[\n,]+/).map(u => u.trim()).filter(u => u.startsWith('http'));
         if (!m3uUrls.length) return showError('No valid URLs found. They must start with http:// or https://');
 
       } else {
-        const server = document.getElementById('xtreamServer').value.trim().replace(/\\/$/, '');
+        const server = document.getElementById('xtreamServer').value.trim().replace(/\/$/, '');
         const user   = document.getElementById('xtreamUser').value.trim();
         const pass   = document.getElementById('xtreamPass').value.trim();
         if (!server) return showError('Please enter the server URL.');
         if (!user)   return showError('Please enter your username.');
         if (!pass)   return showError('Please enter your password.');
         if (!server.startsWith('http')) return showError('Server URL must start with http:// or https://');
-        m3uUrls = [\`\${server}/get.php?username=\${encodeURIComponent(user)}&password=\${encodeURIComponent(pass)}&type=m3u_plus&output=ts\`];
+        m3uUrls = [`${server}/get.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&type=m3u_plus&output=ts`];
       }
 
       const config = { m3uUrls };
@@ -673,7 +681,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       const url     = window.location.origin + '/' + encoded + '/manifest.json';
 
       document.getElementById('manifestUrl').value = url;
-      document.getElementById('stremioLink').href  = 'stremio://' + url.replace(/^https?:\\/\\//, '');
+      document.getElementById('stremioLink').href  = 'stremio://' + url.replace(/^https?:\/\//, '');
       document.getElementById('result').style.display = 'block';
       document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
     }
