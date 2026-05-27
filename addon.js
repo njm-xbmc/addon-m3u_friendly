@@ -178,7 +178,7 @@ app.get("/manifest.json", (req, res) => {
     version:     "1.0.0",
     name:        "M3U IPTV",
     description: "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio. Auto-resolves IMDb IDs via TMDB.",
-    logo:        LOGO,
+    logo:        "https://raw.githubusercontent.com/Esmequiinn/addon-m3u_friendly/main/logo.svg",
     resources:   ["catalog", "stream", "meta"],
     types:       ["movie", "series"],
     catalogs: [
