@@ -191,13 +191,13 @@ app.get("/manifest.json", (req, res) => {
       {
         type:  "movie",
         id:    "m3u_movies",
-        name:  "🎬 My Movies",
+        name:  " My Movies",
         extra: [{ name: "search", isRequired: false }]
       },
       {
         type:  "series",
         id:    "m3u_series",
-        name:  "📺 My Series",
+        name:  " My Series",
         extra: [{ name: "search", isRequired: false }]
       }
     ],
@@ -226,7 +226,7 @@ app.get("/:config/manifest.json", (req, res) => {
     id:          "com.m3uiptv.public",
     version:     "1.0.0",
     name:        "M3U IPTV",
-    description: "Reproduce tu lista M3U personal en Stremio con IDs IMDb automáticos | By u/Thin-Soil-4159 (reddit.com/user/Thin-Soil-4159) | GitHub: github.com/Esmequiinn",
+    description: "Reproduce tu lista M3U personal en Stremio con IDs IMDb automáticos | By (reddit.com/user/Thin-Soil-4159) | GitHub: github.com/Esmequiinn",
     logo:        LOGO,
     resources:   ["catalog", "stream", "meta"],
     types:       ["movie", "series"],
@@ -234,13 +234,13 @@ app.get("/:config/manifest.json", (req, res) => {
       {
         type:  "movie",
         id:    "m3u_movies",
-        name:  "🎬 Mis Películas",
+        name:  " Mis Películas",
         extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }]
       },
       {
         type:  "series",
         id:    "m3u_series",
-        name:  "📺 Mis Series",
+        name:  " Mis Series",
         extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }]
       }
     ],
