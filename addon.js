@@ -696,5 +696,5 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
 // ─────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(\`🚀 M3U IPTV corriendo en http://localhost:\${PORT}\`);
+  console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
 });
