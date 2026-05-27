@@ -312,22 +312,43 @@
       margin-top: 10px;
     }
 
-    .footer-links {
-      margin-top: 24px;
+    .support-links {
+      margin-top: 30px;
       text-align: center;
-      font-size: 12px;
+    }
+
+    .support-title {
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .support-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+
+    .support-row span {
       color: #555;
     }
 
-    .footer-links a {
-      color: #888;
+    .support-row a {
+      color: #00d4ff;
       text-decoration: none;
-      transition: color 0.15s;
+      font-weight: 500;
+      transition: opacity 0.15s;
     }
 
-    .footer-links a:hover {
-      color: #fff;
+    .support-row a:hover {
+      opacity: 0.75;
     }
+
   </style>
 </head>
 
@@ -344,8 +365,6 @@
       </div>
     </div>
 
-    <!-- TABS -->
-
     <div class="tabs">
       <button class="tab active" onclick="switchTab('m3u')">
         M3U Playlist
@@ -355,8 +374,6 @@
         Xtream Codes
       </button>
     </div>
-
-    <!-- PANEL M3U -->
 
     <div class="panel active" id="panel-m3u">
 
@@ -372,21 +389,9 @@
           placeholder="https://yourprovider.com/playlist.m3u&#10;https://another-provider.com/list.m3u"
         ></textarea>
 
-        <div class="example">
-          One URL per line, or separated by commas
-          <br><br>
-
-          https://provider.com/get.php?username=john&amp;password=1234&amp;type=m3u_plus
-          <br>
-
-          https://iptv-service.com/john/mysecretpass/playlist.m3u
-        </div>
-
       </div>
 
     </div>
-
-    <!-- PANEL XTREAM -->
 
     <div class="panel" id="panel-xtream">
 
@@ -402,10 +407,6 @@
           id="xtreamServer"
           placeholder="http://yourprovider.com:8080"
         >
-
-        <p class="hint">
-          The server address your provider gave you — include the port if any.
-        </p>
 
       </div>
 
@@ -443,21 +444,9 @@
 
       </div>
 
-      <div class="example">
-        Your provider will give you these 3 things.
-        <br>
-
-        Example server: http://iptv-service.com:8080
-        <br>
-
-        The addon will build your M3U URL automatically.
-      </div>
-
     </div>
 
     <hr class="divider">
-
-    <!-- TMDB -->
 
     <p class="section-label">
       Optional — recommended
@@ -475,18 +464,6 @@
         id="tmdbKey"
         placeholder="e.g. a1b2c3d4e5f6..."
       >
-
-      <p class="hint">
-        Matches your content with Stremio's global catalog — posters,
-        descriptions, ratings.
-        Free key at
-        <a
-          href="https://www.themoviedb.org/settings/api"
-          target="_blank"
-        >
-          themoviedb.org
-        </a>
-      </p>
 
     </div>
 
@@ -526,22 +503,41 @@
 
     </div>
 
-    <!-- FOOTER LINKS -->
+    <div class="support-links">
 
-    <div class="footer-links">
-      Support
-      |
-      <a href="https://www.paypal.com/paypalme/EsmeQuiinn" target="_blank">
-        PayPal
-      </a>
-      |
-      <a href="https://www.reddit.com/user/Thin-Soil-4159/" target="_blank">
-        Reddit
-      </a>
-      |
-      <a href="https://github.com/Esmequiinn/addon-m3u_friendly" target="_blank">
-        GitHub Repository
-      </a>
+      <div class="support-title">
+        Support
+      </div>
+
+      <div class="support-row">
+
+        <a
+          href="https://www.paypal.com/paypalme/EsmeQuiinn"
+          target="_blank"
+        >
+          PayPal
+        </a>
+
+        <span>|</span>
+
+        <a
+          href="https://www.reddit.com/user/Thin-Soil-4159/"
+          target="_blank"
+        >
+          Reddit
+        </a>
+
+        <span>|</span>
+
+        <a
+          href="https://github.com/Esmequiinn/addon-m3u_friendly"
+          target="_blank"
+        >
+          GitHub Repository
+        </a>
+
+      </div>
+
     </div>
 
   </div>
@@ -610,14 +606,6 @@
             return u.startsWith('http');
           });
 
-        if (!m3uUrls.length) {
-
-          return showError(
-            'No valid URLs found. They must start with http:// or https://'
-          );
-
-        }
-
       } else {
 
         var server = document
@@ -635,26 +623,6 @@
           .getElementById('xtreamPass')
           .value
           .trim();
-
-        if (!server) {
-          return showError('Please enter the server URL.');
-        }
-
-        if (!user) {
-          return showError('Please enter your username.');
-        }
-
-        if (!pass) {
-          return showError('Please enter your password.');
-        }
-
-        if (!server.startsWith('http')) {
-
-          return showError(
-            'Server URL must start with http:// or https://'
-          );
-
-        }
 
         m3uUrls = [
           server +
