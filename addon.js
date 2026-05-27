@@ -166,6 +166,12 @@ const LOGO_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'>
 const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
 
 // ─────────────────────────────────────────────
+// SIGNATURE
+// ─────────────────────────────────────────────
+
+const STREMIO_SIGNATURE = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..drO4si40GNH5_7aW8jgB9g.-1ysZnzhUaDVuZwvH2qcKs-pGPZ5D1ikiZQG1OfrWSNLrdVAU4wiuI1zXj2LtWNyn-ckw9K3be7ufwYrfXra0ty2W72J5wibK6spyF0n20oc925LpgsA2yhZvfYpGWeh.1RFI7MSVY2fm6IKI7dOqyw";
+
+// ─────────────────────────────────────────────
 // RUTAS
 // ─────────────────────────────────────────────
 
@@ -202,7 +208,7 @@ app.get("/manifest.json", (req, res) => {
     },
     stremioAddonsConfig: {
       issuer:    "https://stremio-addons.net",
-      signature: "PEGA_AQUI_TU_SIGNATURE_COMPLETA"
+      signature: STREMIO_SIGNATURE
     }
   });
 });
@@ -244,7 +250,7 @@ app.get("/:config/manifest.json", (req, res) => {
     },
     stremioAddonsConfig: {
       issuer:    "https://stremio-addons.net",
-      signature: "PEGA_AQUI_TU_SIGNATURE_COMPLETA"
+      signature: STREMIO_SIGNATURE
     }
   });
 });
@@ -365,7 +371,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M3U IPTV – Setup</title>
+  <title>M3U IPTV \u2013 Setup</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -572,7 +578,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
         <textarea id="m3uUrls" placeholder="https://yourprovider.com/playlist.m3u&#10;https://another-provider.com/list.m3u"></textarea>
         <div class="example">
           One URL per line, or separated by commas<br><br>
-          https://provider.com/get.php?username=john&password=1234&type=m3u_plus<br>
+          https://provider.com/get.php?username=john&amp;password=1234&amp;type=m3u_plus<br>
           https://iptv-service.com/john/mysecretpass/playlist.m3u
         </div>
       </div>
@@ -583,7 +589,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       <div class="field">
         <label>Server URL <span class="tag req">required</span></label>
         <input type="url" id="xtreamServer" placeholder="http://yourprovider.com:8080">
-        <p class="hint">The server address your provider gave you — include the port if any.</p>
+        <p class="hint">The server address your provider gave you &mdash; include the port if any.</p>
       </div>
       <div class="field row-2">
         <div>
@@ -592,7 +598,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
         </div>
         <div>
           <label>Password <span class="tag req">required</span></label>
-          <input type="password" id="xtreamPass" placeholder="••••••••">
+          <input type="password" id="xtreamPass" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
         </div>
       </div>
       <div class="example">
@@ -604,18 +610,18 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
 
     <hr class="divider">
 
-    <!-- TMDB — shared -->
-    <p class="section-label">Optional — recommended</p>
+    <!-- TMDB shared -->
+    <p class="section-label">Optional &mdash; recommended</p>
     <div class="field">
       <label>TMDB API Key <span class="tag">optional</span></label>
       <input type="password" id="tmdbKey" placeholder="e.g. a1b2c3d4e5f6...">
       <p class="hint">
-        Matches your content with Stremio's global catalog — posters, descriptions, ratings.
+        Matches your content with Stremio's global catalog &mdash; posters, descriptions, ratings.
         Free key at <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a>
       </p>
     </div>
 
-    <button class="btn" onclick="generate()">Generate install URL →</button>
+    <button class="btn" onclick="generate()">Generate install URL &rarr;</button>
 
     <div class="error" id="errorMsg"></div>
 
@@ -660,18 +666,18 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       if (activeTab === 'm3u') {
         const raw = document.getElementById('m3uUrls').value.trim();
         if (!raw) return showError('Please enter at least one M3U URL.');
-        m3uUrls = raw.split(/[\n,]+/).map(u => u.trim()).filter(u => u.startsWith('http'));
+        m3uUrls = raw.split(/[\\n,]+/).map(u => u.trim()).filter(u => u.startsWith('http'));
         if (!m3uUrls.length) return showError('No valid URLs found. They must start with http:// or https://');
 
       } else {
-        const server = document.getElementById('xtreamServer').value.trim().replace(/\/$/, '');
+        const server = document.getElementById('xtreamServer').value.trim().replace(/\\/$/, '');
         const user   = document.getElementById('xtreamUser').value.trim();
         const pass   = document.getElementById('xtreamPass').value.trim();
         if (!server) return showError('Please enter the server URL.');
         if (!user)   return showError('Please enter your username.');
         if (!pass)   return showError('Please enter your password.');
         if (!server.startsWith('http')) return showError('Server URL must start with http:// or https://');
-        m3uUrls = [`${server}/get.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&type=m3u_plus&output=ts`];
+        m3uUrls = [server + '/get.php?username=' + encodeURIComponent(user) + '&password=' + encodeURIComponent(pass) + '&type=m3u_plus&output=ts'];
       }
 
       const config = { m3uUrls };
@@ -681,7 +687,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       const url     = window.location.origin + '/' + encoded + '/manifest.json';
 
       document.getElementById('manifestUrl').value = url;
-      document.getElementById('stremioLink').href  = 'stremio://' + url.replace(/^https?:\/\//, '');
+      document.getElementById('stremioLink').href  = 'stremio://' + url.replace(/^https?:\\/\\//, '');
       document.getElementById('result').style.display = 'block';
       document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
     }
@@ -691,7 +697,7 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
       input.select();
       navigator.clipboard.writeText(input.value).then(() => {
         const btn = document.getElementById('copyBtn');
-        btn.textContent = 'Copied ✓';
+        btn.textContent = 'Copied \u2713';
         setTimeout(() => btn.textContent = 'Copy', 2000);
       });
     }
@@ -704,5 +710,5 @@ const CONFIGURE_HTML = `<!DOCTYPE html>
 // ─────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
+  console.log(`\uD83D\uDE80 M3U IPTV corriendo en http://localhost:${PORT}`);
 });
