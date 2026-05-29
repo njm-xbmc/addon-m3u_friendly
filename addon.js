@@ -1,9 +1,12 @@
 const express = require("express");
 const path = require("path");
+const crypto = require("crypto");
 const { parseM3U, groupContent } = require("./parse-m3u");
 
 const app = express();
 const PORT = process.env.PORT || 7000;
+
+app.use(express.json());
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -12,26 +15,31 @@ app.use((req, res, next) => {
 });
 
 // ─────────────────────────────────────────────
+// CONFIG STORE — guarda configs por ID corto
+// ─────────────────────────────────────────────
+
+const configStore = new Map();
+
+function saveConfig(config) {
+  const json = JSON.stringify(config);
+  const id   = crypto.createHash("sha256").update(json).digest("hex").slice(0, 12);
+  configStore.set(id, config);
+  return id;
+}
+
+function getConfig(id) {
+  if (configStore.has(id)) return configStore.get(id);
+  return null;
+}
+
+// ─────────────────────────────────────────────
 // CACHE POR USUARIO
 // ─────────────────────────────────────────────
 
 const userCache = new Map();
-const CACHE_TTL = 6 * 60 * 60 * 1000;
-const MAX_USERS = 200;
-
-// ─────────────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────────────
-
-function decodeConfig(str) {
-  try {
-    const config = JSON.parse(Buffer.from(str, "base64").toString("utf8"));
-    if (!Array.isArray(config.m3uUrls) || !config.m3uUrls.length) return null;
-    return config;
-  } catch {
-    return null;
-  }
-}
+const CACHE_TTL  = 2 * 60 * 60 * 1000; // 2 horas
+const MAX_USERS  = 30;                  // máximo en plan gratuito de Render
+const MAX_ITEMS  = 3000;                // límite de items por usuario
 
 // ─────────────────────────────────────────────
 // NORMALIZE
@@ -64,7 +72,7 @@ async function searchTMDB(title, type, tmdbCache, apiKey) {
   const clean = normalize(title);
   if (clean in tmdbCache) return tmdbCache[clean];
   try {
-    const endpoint = type === "series" ? "tv" : "movie";
+    const endpoint  = type === "series" ? "tv" : "movie";
     const searchRes = await fetch(
       `https://api.themoviedb.org/3/search/${endpoint}?api_key=${apiKey}&query=${encodeURIComponent(clean)}&language=es-MX`
     );
@@ -73,7 +81,7 @@ async function searchTMDB(title, type, tmdbCache, apiKey) {
     const detRes = await fetch(
       `https://api.themoviedb.org/3/${endpoint}/${data.results[0].id}/external_ids?api_key=${apiKey}`
     );
-    const det = await detRes.json();
+    const det  = await detRes.json();
     const imdb = det.imdb_id || null;
     tmdbCache[clean] = imdb;
     return imdb;
@@ -83,56 +91,33 @@ async function searchTMDB(title, type, tmdbCache, apiKey) {
   }
 }
 
-// ─────────────────────────────────────────────
-// CHUNKS — divide array en lotes
-// ─────────────────────────────────────────────
-
 function chunks(arr, size) {
   const result = [];
-  for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
-  }
+  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
   return result;
 }
-
-// ─────────────────────────────────────────────
-// PREFETCH TMDB — lotes de 4 en paralelo
-// 4 requests simultáneos cada 500ms = ~8/seg
-// Límite TMDB: 40 req/10seg — dentro del límite
-// Tiempo estimado: (N/4) × 500ms
-// ─────────────────────────────────────────────
 
 async function prefetchTMDB(userData) {
   const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = userData;
   if (!apiKey) return;
-
-  const movieList = movies.filter(m => !m.id.startsWith("tt"));
+  const movieList  = movies.filter(m => !m.id.startsWith("tt"));
   const seriesList = Object.values(series).filter(s => !s.id.startsWith("tt"));
-
   console.log(`⏳ Pre-carga: ${movieList.length} películas + ${seriesList.length} series`);
-
   for (const batch of chunks(movieList, 4)) {
-    await Promise.all(
-      batch.map(async movie => {
-        const imdb = await searchTMDB(movie.title, "movie", tmdbCache, apiKey);
-        if (imdb) { movieImdbIndex[imdb] = movie.id; movie.id = imdb; }
-      })
-    );
+    await Promise.all(batch.map(async movie => {
+      const imdb = await searchTMDB(movie.title, "movie", tmdbCache, apiKey);
+      if (imdb) { movieImdbIndex[imdb] = movie.id; movie.id = imdb; }
+    }));
     await sleep(500);
   }
-
   console.log(`✅ Películas resueltas`);
-
   for (const batch of chunks(seriesList, 4)) {
-    await Promise.all(
-      batch.map(async show => {
-        const imdb = await searchTMDB(show.title, "series", tmdbCache, apiKey);
-        if (imdb) { seriesImdbIndex[imdb] = show.id; show.id = imdb; }
-      })
-    );
+    await Promise.all(batch.map(async show => {
+      const imdb = await searchTMDB(show.title, "series", tmdbCache, apiKey);
+      if (imdb) { seriesImdbIndex[imdb] = show.id; show.id = imdb; }
+    }));
     await sleep(500);
   }
-
   console.log(`✅ Series resueltas`);
 }
 
@@ -151,6 +136,11 @@ async function loadList(m3uUrls) {
       console.error(`❌ Error descargando ${url}:`, err.message);
     }
   }
+  // Limitar items totales para proteger la memoria
+  if (allItems.length > MAX_ITEMS) {
+    console.warn(`⚠️  Lista muy grande (${allItems.length} items) — limitando a ${MAX_ITEMS}`);
+    allItems = allItems.slice(0, MAX_ITEMS);
+  }
   return groupContent(allItems);
 }
 
@@ -158,10 +148,10 @@ async function loadList(m3uUrls) {
 // CACHE DE USUARIO
 // ─────────────────────────────────────────────
 
-async function getUserData(configHash, config) {
+async function getUserData(configId, config) {
   const now = Date.now();
-  if (userCache.has(configHash)) {
-    const cached = userCache.get(configHash);
+  if (userCache.has(configId)) {
+    const cached = userCache.get(configId);
     if (now - cached.loadedAt < CACHE_TTL) return cached;
   }
   if (userCache.size >= MAX_USERS) {
@@ -173,18 +163,37 @@ async function getUserData(configHash, config) {
   const userData = {
     movies,
     series,
-    tmdbCache: {},
-    movieImdbIndex: {},
+    tmdbCache:       {},
+    movieImdbIndex:  {},
     seriesImdbIndex: {},
-    apiKey: config.tmdbApiKey || null,
-    loadedAt: now
+    apiKey:          config.tmdbApiKey || null,
+    loadedAt:        now
   };
-  userCache.set(configHash, userData);
+  userCache.set(configId, userData);
   prefetchTMDB(userData).catch(err =>
     console.error("❌ Error en pre-carga TMDB:", err)
   );
   return userData;
 }
+
+// ─────────────────────────────────────────────
+// LIMPIEZA AUTOMÁTICA DE MEMORIA
+// Cada 30 min revisa el uso de RAM y limpia si supera 400MB
+// ─────────────────────────────────────────────
+
+function checkMemory() {
+  const used = process.memoryUsage().heapUsed / 1024 / 1024;
+  console.log(`💾 Memoria: ${Math.round(used)}MB — ${userCache.size} usuarios en cache`);
+  if (used > 400) {
+    console.log("⚠️  Memoria alta — limpiando cache de usuarios...");
+    const sorted = [...userCache.entries()].sort((a, b) => a[1].loadedAt - b[1].loadedAt);
+    const toDelete = sorted.slice(0, Math.floor(sorted.length / 2));
+    toDelete.forEach(([key]) => userCache.delete(key));
+    console.log(`🧹 Cache reducido a ${userCache.size} usuarios`);
+  }
+}
+
+setInterval(checkMemory, 30 * 60 * 1000);
 
 // ─────────────────────────────────────────────
 // LOGO
@@ -193,12 +202,10 @@ async function getUserData(configHash, config) {
 const LOGO_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'>
   <defs>
     <linearGradient id='bg' x1='0%' y1='0%' x2='100%' y2='100%'>
-      <stop offset='0%' stop-color='#1a1a2e'/>
-      <stop offset='100%' stop-color='#0f3460'/>
+      <stop offset='0%' stop-color='#1a1a2e'/><stop offset='100%' stop-color='#0f3460'/>
     </linearGradient>
     <linearGradient id='txt' x1='0%' y1='0%' x2='100%' y2='0%'>
-      <stop offset='0%' stop-color='#00d4ff'/>
-      <stop offset='100%' stop-color='#0077ff'/>
+      <stop offset='0%' stop-color='#00d4ff'/><stop offset='100%' stop-color='#0077ff'/>
     </linearGradient>
   </defs>
   <rect width='256' height='256' rx='48' fill='url(#bg)'/>
@@ -207,10 +214,6 @@ const LOGO_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'>
 </svg>`;
 
 const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
-
-// ─────────────────────────────────────────────
-// SIGNATURE
-// ─────────────────────────────────────────────
 
 const STREMIO_SIGNATURE =
   "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..drO4si40GNH5_7aW8jgB9g.-1ysZnzhUaDVuZwvH2qcKs-pGPZ5D1ikiZQG1OfrWSNLrdVAU4wiuI1zXj2LtWNyn-ckw9K3be7ufwYrfXra0ty2W72J5wibK6spyF0n20oc925LpgsA2yhZvfYpGWeh.1RFI7MSVY2fm6IKI7dOqyw";
@@ -225,7 +228,20 @@ app.get("/configure", (req, res) => {
   res.sendFile(path.join(__dirname, "configure.html"));
 });
 
-// ─── Manifest base ───────────────────────────
+// ─── API: guardar config y devolver ID corto ──
+
+app.post("/api/config", (req, res) => {
+  const { m3uUrls, tmdbApiKey } = req.body;
+  if (!Array.isArray(m3uUrls) || !m3uUrls.length) {
+    return res.status(400).json({ error: "m3uUrls required" });
+  }
+  const config = { m3uUrls };
+  if (tmdbApiKey) config.tmdbApiKey = tmdbApiKey;
+  const id = saveConfig(config);
+  res.json({ id });
+});
+
+// ─── Manifest base ────────────────────────────
 
 app.get("/manifest.json", (req, res) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
@@ -263,11 +279,11 @@ app.get("/manifest.json", (req, res) => {
   });
 });
 
-// ─── Manifest usuario ────────────────────────
+// ─── Manifest usuario (ID corto) ─────────────
 
-app.get("/:config/manifest.json", (req, res) => {
-  const config = decodeConfig(req.params.config);
-  if (!config) return res.status(400).json({ error: "Config inválida" });
+app.get("/:configId/manifest.json", (req, res) => {
+  const config = getConfig(req.params.configId);
+  if (!config) return res.status(404).json({ error: "Config not found. Please reconfigure the addon." });
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   res.json({
     id:          "com.m3uiptv.public",
@@ -310,12 +326,12 @@ app.get("/:config/manifest.json", (req, res) => {
 
 // ─── Catalog ─────────────────────────────────
 
-app.get("/:config/catalog/:type/:id.json",        handleCatalog);
-app.get("/:config/catalog/:type/:id/:extra.json", handleCatalog);
+app.get("/:configId/catalog/:type/:id.json",        handleCatalog);
+app.get("/:configId/catalog/:type/:id/:extra.json", handleCatalog);
 
 async function handleCatalog(req, res) {
   try {
-    const config = decodeConfig(req.params.config);
+    const config = getConfig(req.params.configId);
     if (!config) return res.json({ metas: [] });
     const { type, id } = req.params;
     const extra  = req.params.extra
@@ -324,7 +340,7 @@ async function handleCatalog(req, res) {
     const search = extra.search ? normalize(extra.search) : null;
     const skip   = parseInt(extra.skip || "0", 10);
     const PAGE   = 100;
-    const data   = await getUserData(req.params.config, config);
+    const data   = await getUserData(req.params.configId, config);
     if (type === "movie" && id === "m3u_movies") {
       let results = data.movies;
       if (search) results = results.filter(m => normalize(m.title).includes(search));
@@ -352,12 +368,12 @@ async function handleCatalog(req, res) {
 
 // ─── Meta ─────────────────────────────────────
 
-app.get("/:config/meta/:type/:id.json", async (req, res) => {
+app.get("/:configId/meta/:type/:id.json", async (req, res) => {
   try {
-    const config = decodeConfig(req.params.config);
+    const config = getConfig(req.params.configId);
     if (!config) return res.json({ meta: null });
     const { type, id } = req.params;
-    const data = await getUserData(req.params.config, config);
+    const data = await getUserData(req.params.configId, config);
     const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = data;
     if (type === "movie") {
       const slugKey = movieImdbIndex[id] || id;
@@ -402,12 +418,12 @@ app.get("/:config/meta/:type/:id.json", async (req, res) => {
 
 // ─── Streams ──────────────────────────────────
 
-app.get("/:config/stream/:type/:id.json", async (req, res) => {
+app.get("/:configId/stream/:type/:id.json", async (req, res) => {
   try {
-    const config = decodeConfig(req.params.config);
+    const config = getConfig(req.params.configId);
     if (!config) return res.json({ streams: [] });
     const { type, id } = req.params;
-    const data = await getUserData(req.params.config, config);
+    const data = await getUserData(req.params.configId, config);
     const { movies, series, movieImdbIndex, seriesImdbIndex } = data;
     if (type === "movie") {
       const slugKey = movieImdbIndex[id] || id;
