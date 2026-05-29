@@ -106,30 +106,92 @@ function chunks(arr, size) {
 }
 
 async function prefetchTMDB(data) {
-  const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = data;
+  const {
+    movies,
+    series,
+    tmdbCache,
+    movieImdbIndex,
+    seriesImdbIndex,
+    apiKey
+  } = data;
+
   if (!apiKey) return;
 
   const movieList  = movies.filter(m => !m.id.startsWith("tt"));
   const seriesList = Object.values(series).filter(s => !s.id.startsWith("tt"));
-  console.log(`⏳ Pre-carga TMDB: ${movieList.length} películas + ${seriesList.length} series`);
 
-  for (const batch of chunks(movieList, 2)) {
+  console.log(`⏳ Pre-carga TMDB iniciada`);
+  console.log(`🎬 ${movieList.length} películas`);
+  console.log(`📺 ${seriesList.length} series`);
+
+  let resolvedMovies = 0;
+  let resolvedSeries = 0;
+
+  // ─────────────────────────────────────────
+  // PELÍCULAS
+  // ─────────────────────────────────────────
+
+  for (const batch of chunks(movieList, 4)) {
+
     await Promise.all(batch.map(async movie => {
-      const imdb = await searchTMDB(movie.title, "movie", tmdbCache, apiKey);
-      if (imdb) { movieImdbIndex[imdb] = movie.id; movie.id = imdb; }
-    }));
-    await sleep(750);
-  }
-  console.log(`✅ Películas resueltas`);
+      try {
+        const imdb = await searchTMDB(
+          movie.title,
+          "movie",
+          tmdbCache,
+          apiKey
+        );
 
-  for (const batch of chunks(seriesList, 2)) {
-    await Promise.all(batch.map(async show => {
-      const imdb = await searchTMDB(show.title, "series", tmdbCache, apiKey);
-      if (imdb) { seriesImdbIndex[imdb] = show.id; show.id = imdb; }
+        if (imdb) {
+          movieImdbIndex[imdb] = movie.id;
+          movie.id = imdb;
+          resolvedMovies++;
+        }
+
+      } catch (err) {
+        console.error(`❌ TMDB movie error: ${movie.title}`);
+      }
     }));
-    await sleep(750);
+
+    console.log(`🎬 Películas resueltas: ${resolvedMovies}/${movieList.length}`);
+
+    await sleep(400);
   }
-  console.log(`✅ Series resueltas`);
+
+  console.log(`✅ Películas terminadas`);
+
+  // ─────────────────────────────────────────
+  // SERIES
+  // ─────────────────────────────────────────
+
+  for (const batch of chunks(seriesList, 4)) {
+
+    await Promise.all(batch.map(async show => {
+      try {
+        const imdb = await searchTMDB(
+          show.title,
+          "series",
+          tmdbCache,
+          apiKey
+        );
+
+        if (imdb) {
+          seriesImdbIndex[imdb] = show.id;
+          show.id = imdb;
+          resolvedSeries++;
+        }
+
+      } catch (err) {
+        console.error(`❌ TMDB series error: ${show.title}`);
+      }
+    }));
+
+    console.log(`📺 Series resueltas: ${resolvedSeries}/${seriesList.length}`);
+
+    await sleep(400);
+  }
+
+  console.log(`✅ Pre-carga TMDB completada`);
 }
 
 // ─────────────────────────────────────────────
