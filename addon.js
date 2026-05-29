@@ -1,13 +1,12 @@
 const express = require("express");
-const path = require("path");
-const crypto = require("crypto");
+const path    = require("path");
+const crypto  = require("crypto");
 const { parseM3U, groupContent } = require("./parse-m3u");
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 7000;
 
 app.use(express.json());
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
@@ -15,31 +14,40 @@ app.use((req, res, next) => {
 });
 
 // ─────────────────────────────────────────────
-// CONFIG STORE — guarda configs por ID corto
+// CONFIG STORE
 // ─────────────────────────────────────────────
 
 const configStore = new Map();
 
 function saveConfig(config) {
-  const json = JSON.stringify(config);
-  const id   = crypto.createHash("sha256").update(json).digest("hex").slice(0, 12);
+  const id = crypto
+    .createHash("sha256")
+    .update(JSON.stringify(config))
+    .digest("hex")
+    .slice(0, 12);
   configStore.set(id, config);
   return id;
 }
 
 function getConfig(id) {
-  if (configStore.has(id)) return configStore.get(id);
-  return null;
+  return configStore.get(id) || null;
 }
 
 // ─────────────────────────────────────────────
-// CACHE POR USUARIO
+// ESTADO GLOBAL — una sola carga de datos
+// Se recarga cuando el usuario actualiza su config
 // ─────────────────────────────────────────────
 
-const userCache = new Map();
-const CACHE_TTL  = 2 * 60 * 60 * 1000; // 2 horas
-const MAX_USERS  = 30;                  // máximo en plan gratuito de Render
-const MAX_ITEMS  = 5000;                // límite de títulos únicos DESPUÉS de agrupar
+let globalData = {
+  movies:          [],
+  series:          {},
+  tmdbCache:       {},
+  movieImdbIndex:  {},
+  seriesImdbIndex: {},
+  apiKey:          null,
+  configId:        null,
+  ready:           false
+};
 
 // ─────────────────────────────────────────────
 // NORMALIZE
@@ -97,12 +105,14 @@ function chunks(arr, size) {
   return result;
 }
 
-async function prefetchTMDB(userData) {
-  const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = userData;
+async function prefetchTMDB(data) {
+  const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = data;
   if (!apiKey) return;
+
   const movieList  = movies.filter(m => !m.id.startsWith("tt"));
   const seriesList = Object.values(series).filter(s => !s.id.startsWith("tt"));
-  console.log(`⏳ Pre-carga: ${movieList.length} películas + ${seriesList.length} series`);
+  console.log(`⏳ Pre-carga TMDB: ${movieList.length} películas + ${seriesList.length} series`);
+
   for (const batch of chunks(movieList, 2)) {
     await Promise.all(batch.map(async movie => {
       const imdb = await searchTMDB(movie.title, "movie", tmdbCache, apiKey);
@@ -111,6 +121,7 @@ async function prefetchTMDB(userData) {
     await sleep(750);
   }
   console.log(`✅ Películas resueltas`);
+
   for (const batch of chunks(seriesList, 2)) {
     await Promise.all(batch.map(async show => {
       const imdb = await searchTMDB(show.title, "series", tmdbCache, apiKey);
@@ -122,13 +133,14 @@ async function prefetchTMDB(userData) {
 }
 
 // ─────────────────────────────────────────────
-// CARGAR LISTA
+// CARGAR LISTAS — igual que el addon personal
 // ─────────────────────────────────────────────
 
 async function loadList(m3uUrls) {
   let allItems = [];
   for (const url of m3uUrls) {
     try {
+      console.log(`📥 Descargando: ${url}`);
       const res = await fetch(url);
       if (!res.ok) continue;
       allItems = allItems.concat(parseM3U(await res.text()));
@@ -136,67 +148,38 @@ async function loadList(m3uUrls) {
       console.error(`❌ Error descargando ${url}:`, err.message);
     }
   }
-  console.log(`📋 Items crudos descargados: ${allItems.length}`);
+  console.log(`📋 Items crudos: ${allItems.length}`);
   const grouped = groupContent(allItems);
-  const totalTitles = grouped.movies.length + Object.keys(grouped.series).length;
-  console.log(`✅ Títulos únicos tras agrupar: ${grouped.movies.length} películas + ${Object.keys(grouped.series).length} series`);
-  if (totalTitles > MAX_ITEMS) {
-    console.warn(`⚠️  Demasiados títulos únicos (${totalTitles}) — limitando a ${MAX_ITEMS}`);
-    grouped.movies = grouped.movies.slice(0, MAX_ITEMS);
-  }
+  console.log(`✅ ${grouped.movies.length} películas | ${Object.keys(grouped.series).length} series`);
   return grouped;
 }
 
 // ─────────────────────────────────────────────
-// CACHE DE USUARIO
+// INICIALIZAR / RECARGAR DATOS GLOBALES
 // ─────────────────────────────────────────────
 
-async function getUserData(configId, config) {
-  const now = Date.now();
-  if (userCache.has(configId)) {
-    const cached = userCache.get(configId);
-    if (now - cached.loadedAt < CACHE_TTL) return cached;
-  }
-  if (userCache.size >= MAX_USERS) {
-    const oldest = [...userCache.entries()]
-      .sort((a, b) => a[1].loadedAt - b[1].loadedAt)[0];
-    userCache.delete(oldest[0]);
-  }
+async function initData(config, configId) {
+  console.log(`🔄 Cargando listas...`);
+  globalData.ready = false;
+
   const { movies, series } = await loadList(config.m3uUrls);
-  const userData = {
+
+  globalData = {
     movies,
     series,
     tmdbCache:       {},
     movieImdbIndex:  {},
     seriesImdbIndex: {},
     apiKey:          config.tmdbApiKey || null,
-    loadedAt:        now
+    configId,
+    ready:           true
   };
-  userCache.set(configId, userData);
-  prefetchTMDB(userData).catch(err =>
+
+  console.log(`✅ Datos cargados y listos`);
+  prefetchTMDB(globalData).catch(err =>
     console.error("❌ Error en pre-carga TMDB:", err)
   );
-  return userData;
 }
-
-// ─────────────────────────────────────────────
-// LIMPIEZA AUTOMÁTICA DE MEMORIA
-// Cada 30 min revisa el uso de RAM y limpia si supera 400MB
-// ─────────────────────────────────────────────
-
-function checkMemory() {
-  const used = process.memoryUsage().heapUsed / 1024 / 1024;
-  console.log(`💾 Memoria: ${Math.round(used)}MB — ${userCache.size} usuarios en cache`);
-  if (used > 400) {
-    console.log("⚠️  Memoria alta — limpiando cache de usuarios...");
-    const sorted = [...userCache.entries()].sort((a, b) => a[1].loadedAt - b[1].loadedAt);
-    const toDelete = sorted.slice(0, Math.floor(sorted.length / 2));
-    toDelete.forEach(([key]) => userCache.delete(key));
-    console.log(`🧹 Cache reducido a ${userCache.size} usuarios`);
-  }
-}
-
-setInterval(checkMemory, 30 * 60 * 1000);
 
 // ─────────────────────────────────────────────
 // LOGO
@@ -231,9 +214,9 @@ app.get("/configure", (req, res) => {
   res.sendFile(path.join(__dirname, "configure.html"));
 });
 
-// ─── API: guardar config y devolver ID corto ──
+// ─── API: guardar config y recargar datos ────
 
-app.post("/api/config", (req, res) => {
+app.post("/api/config", async (req, res) => {
   const { m3uUrls, tmdbApiKey } = req.body;
   if (!Array.isArray(m3uUrls) || !m3uUrls.length) {
     return res.status(400).json({ error: "m3uUrls required" });
@@ -241,6 +224,14 @@ app.post("/api/config", (req, res) => {
   const config = { m3uUrls };
   if (tmdbApiKey) config.tmdbApiKey = tmdbApiKey;
   const id = saveConfig(config);
+
+  // Recargar datos en segundo plano si la config cambió
+  if (id !== globalData.configId) {
+    initData(config, id).catch(err =>
+      console.error("❌ Error al recargar datos:", err)
+    );
+  }
+
   res.json({ id });
 });
 
@@ -250,25 +241,15 @@ app.get("/manifest.json", (req, res) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   res.json({
     id:          "com.m3uiptv.public",
-    version:     "1.0.1",
+    version:     "1.0.2",
     name:        "M3U IPTV",
     description: "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio. Auto-resolves IMDb IDs via TMDB. By Esmequiinn (reddit user Thin-Soil-4159)",
     logo:        "https://raw.githubusercontent.com/Esmequiinn/addon-m3u_friendly/main/logo.svg",
     resources:   ["catalog", "stream", "meta"],
     types:       ["movie", "series"],
     catalogs: [
-      {
-        type:  "movie",
-        id:    "m3u_movies",
-        name:  "My Movies",
-        extra: [{ name: "search", isRequired: false }]
-      },
-      {
-        type:  "series",
-        id:    "m3u_series",
-        name:  "My Series",
-        extra: [{ name: "search", isRequired: false }]
-      }
+      { type: "movie",  id: "m3u_movies", name: "My Movies",  extra: [{ name: "search", isRequired: false }] },
+      { type: "series", id: "m3u_series", name: "My Series",  extra: [{ name: "search", isRequired: false }] }
     ],
     behaviorHints: {
       configurable:          true,
@@ -282,7 +263,7 @@ app.get("/manifest.json", (req, res) => {
   });
 });
 
-// ─── Manifest usuario (ID corto) ─────────────
+// ─── Manifest usuario ─────────────────────────
 
 app.get("/:configId/manifest.json", (req, res) => {
   const config = getConfig(req.params.configId);
@@ -290,7 +271,7 @@ app.get("/:configId/manifest.json", (req, res) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   res.json({
     id:          "com.m3uiptv.public",
-    version:     "1.0.1",
+    version:     "1.0.2",
     name:        "M3U IPTV",
     description: "Reproduce tu lista M3U personal en Stremio con IDs IMDb automáticos. By Esmequiinn (reddit user Thin-Soil-4159)",
     logo:        LOGO,
@@ -298,28 +279,15 @@ app.get("/:configId/manifest.json", (req, res) => {
     types:       ["movie", "series"],
     catalogs: [
       {
-        type:  "movie",
-        id:    "m3u_movies",
-        name:  "Mis Películas",
-        extra: [
-          { name: "search", isRequired: false },
-          { name: "skip",   isRequired: false }
-        ]
+        type: "movie", id: "m3u_movies", name: "Mis Películas",
+        extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }]
       },
       {
-        type:  "series",
-        id:    "m3u_series",
-        name:  "Mis Series",
-        extra: [
-          { name: "search", isRequired: false },
-          { name: "skip",   isRequired: false }
-        ]
+        type: "series", id: "m3u_series", name: "Mis Series",
+        extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }]
       }
     ],
-    behaviorHints: {
-      configurable: true,
-      configureUrl: `${baseUrl}/configure`
-    },
+    behaviorHints: { configurable: true, configureUrl: `${baseUrl}/configure` },
     stremioAddonsConfig: {
       issuer:    "https://stremio-addons.net",
       signature: STREMIO_SIGNATURE
@@ -334,8 +302,9 @@ app.get("/:configId/catalog/:type/:id/:extra.json", handleCatalog);
 
 async function handleCatalog(req, res) {
   try {
-    const config = getConfig(req.params.configId);
-    if (!config) return res.json({ metas: [] });
+    if (!getConfig(req.params.configId)) return res.json({ metas: [] });
+    if (!globalData.ready)               return res.json({ metas: [] });
+
     const { type, id } = req.params;
     const extra  = req.params.extra
       ? Object.fromEntries(new URLSearchParams(req.params.extra))
@@ -343,9 +312,9 @@ async function handleCatalog(req, res) {
     const search = extra.search ? normalize(extra.search) : null;
     const skip   = parseInt(extra.skip || "0", 10);
     const PAGE   = 100;
-    const data   = await getUserData(req.params.configId, config);
+
     if (type === "movie" && id === "m3u_movies") {
-      let results = data.movies;
+      let results = globalData.movies;
       if (search) results = results.filter(m => normalize(m.title).includes(search));
       return res.json({
         metas: results.slice(skip, skip + PAGE).map(m => ({
@@ -353,8 +322,9 @@ async function handleCatalog(req, res) {
         }))
       });
     }
+
     if (type === "series" && id === "m3u_series") {
-      let results = Object.values(data.series);
+      let results = Object.values(globalData.series);
       if (search) results = results.filter(s => normalize(s.title).includes(search));
       return res.json({
         metas: results.slice(skip, skip + PAGE).map(s => ({
@@ -362,6 +332,7 @@ async function handleCatalog(req, res) {
         }))
       });
     }
+
     res.json({ metas: [] });
   } catch (err) {
     console.error("❌ Catalog error:", err);
@@ -373,11 +344,12 @@ async function handleCatalog(req, res) {
 
 app.get("/:configId/meta/:type/:id.json", async (req, res) => {
   try {
-    const config = getConfig(req.params.configId);
-    if (!config) return res.json({ meta: null });
+    if (!getConfig(req.params.configId)) return res.json({ meta: null });
+    if (!globalData.ready)               return res.json({ meta: null });
+
     const { type, id } = req.params;
-    const data = await getUserData(req.params.configId, config);
-    const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = data;
+    const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = globalData;
+
     if (type === "movie") {
       const slugKey = movieImdbIndex[id] || id;
       let movie = movies.find(m => m.id === id || m.id === slugKey)
@@ -391,6 +363,7 @@ app.get("/:configId/meta/:type/:id.json", async (req, res) => {
         meta: { id: movie.id, type: "movie", name: movie.title, poster: movie.poster }
       });
     }
+
     if (type === "series") {
       const slugKey = seriesImdbIndex[id] || id;
       let show = series[slugKey] || series[id]
@@ -412,6 +385,7 @@ app.get("/:configId/meta/:type/:id.json", async (req, res) => {
         }
       });
     }
+
     res.json({ meta: null });
   } catch (err) {
     console.error("❌ Meta error:", err);
@@ -423,11 +397,12 @@ app.get("/:configId/meta/:type/:id.json", async (req, res) => {
 
 app.get("/:configId/stream/:type/:id.json", async (req, res) => {
   try {
-    const config = getConfig(req.params.configId);
-    if (!config) return res.json({ streams: [] });
+    if (!getConfig(req.params.configId)) return res.json({ streams: [] });
+    if (!globalData.ready)               return res.json({ streams: [] });
+
     const { type, id } = req.params;
-    const data = await getUserData(req.params.configId, config);
-    const { movies, series, movieImdbIndex, seriesImdbIndex } = data;
+    const { movies, series, movieImdbIndex, seriesImdbIndex } = globalData;
+
     if (type === "movie") {
       const slugKey = movieImdbIndex[id] || id;
       const movie = movies.find(m => m.id === id || m.id === slugKey)
@@ -439,6 +414,7 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
         }))
       });
     }
+
     if (type === "series") {
       const parts   = id.split(":");
       const rawId   = parts[0];
@@ -459,6 +435,7 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
         }))
       });
     }
+
     res.json({ streams: [] });
   } catch (err) {
     console.error("❌ Stream error:", err);
@@ -470,6 +447,22 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
 // START
 // ─────────────────────────────────────────────
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
+
+  // Cargar desde variables de entorno al arrancar (compatibilidad con addon personal)
+  const envUrls = process.env.M3U_URLS
+    ? process.env.M3U_URLS.split(",").map(u => u.trim()).filter(Boolean)
+    : process.env.M3U_URL
+      ? [process.env.M3U_URL.trim()]
+      : [];
+
+  if (envUrls.length) {
+    const config = { m3uUrls: envUrls };
+    if (process.env.TMDB_API_KEY) config.tmdbApiKey = process.env.TMDB_API_KEY;
+    const id = saveConfig(config);
+    await initData(config, id);
+  } else {
+    console.log("⚠️  Sin listas configuradas — configura desde /configure");
+  }
 });
