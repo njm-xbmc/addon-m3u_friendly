@@ -103,20 +103,20 @@ async function prefetchTMDB(userData) {
   const movieList  = movies.filter(m => !m.id.startsWith("tt"));
   const seriesList = Object.values(series).filter(s => !s.id.startsWith("tt"));
   console.log(`⏳ Pre-carga: ${movieList.length} películas + ${seriesList.length} series`);
-  for (const batch of chunks(movieList, 4)) {
+  for (const batch of chunks(movieList, 2)) {
     await Promise.all(batch.map(async movie => {
       const imdb = await searchTMDB(movie.title, "movie", tmdbCache, apiKey);
       if (imdb) { movieImdbIndex[imdb] = movie.id; movie.id = imdb; }
     }));
-    await sleep(500);
+    await sleep(750);
   }
   console.log(`✅ Películas resueltas`);
-  for (const batch of chunks(seriesList, 4)) {
+  for (const batch of chunks(seriesList, 2)) {
     await Promise.all(batch.map(async show => {
       const imdb = await searchTMDB(show.title, "series", tmdbCache, apiKey);
       if (imdb) { seriesImdbIndex[imdb] = show.id; show.id = imdb; }
     }));
-    await sleep(500);
+    await sleep(750);
   }
   console.log(`✅ Series resueltas`);
 }
