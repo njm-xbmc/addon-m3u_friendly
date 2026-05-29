@@ -39,7 +39,7 @@ function getConfig(id) {
 const userCache = new Map();
 const CACHE_TTL  = 2 * 60 * 60 * 1000; // 2 horas
 const MAX_USERS  = 30;                  // máximo en plan gratuito de Render
-const MAX_ITEMS  = 3000;                // límite de items por usuario
+const MAX_ITEMS  = 5000;                // límite de títulos únicos DESPUÉS de agrupar
 
 // ─────────────────────────────────────────────
 // NORMALIZE
@@ -136,12 +136,15 @@ async function loadList(m3uUrls) {
       console.error(`❌ Error descargando ${url}:`, err.message);
     }
   }
-  // Limitar items totales para proteger la memoria
-  if (allItems.length > MAX_ITEMS) {
-    console.warn(`⚠️  Lista muy grande (${allItems.length} items) — limitando a ${MAX_ITEMS}`);
-    allItems = allItems.slice(0, MAX_ITEMS);
+  console.log(`📋 Items crudos descargados: ${allItems.length}`);
+  const grouped = groupContent(allItems);
+  const totalTitles = grouped.movies.length + Object.keys(grouped.series).length;
+  console.log(`✅ Títulos únicos tras agrupar: ${grouped.movies.length} películas + ${Object.keys(grouped.series).length} series`);
+  if (totalTitles > MAX_ITEMS) {
+    console.warn(`⚠️  Demasiados títulos únicos (${totalTitles}) — limitando a ${MAX_ITEMS}`);
+    grouped.movies = grouped.movies.slice(0, MAX_ITEMS);
   }
-  return groupContent(allItems);
+  return grouped;
 }
 
 // ─────────────────────────────────────────────
