@@ -133,24 +133,32 @@ async function prefetchTMDB(data) {
 }
 
 // ─────────────────────────────────────────────
-// CARGAR LISTAS — igual que el addon personal
+// CARGAR LISTA (SECUENCIAL COMO EL NORMAL)
 // ─────────────────────────────────────────────
-
 async function loadList(m3uUrls) {
   let allItems = [];
   for (const url of m3uUrls) {
     try {
       console.log(`📥 Descargando: ${url}`);
       const res = await fetch(url);
-      if (!res.ok) continue;
-      allItems = allItems.concat(parseM3U(await res.text()));
+      if (!res.ok) {
+        console.error(`❌ HTTP ${res.status}: ${url}`);
+        continue;
+      }
+      const text = await res.text();
+      console.log(`🧠 Parseando lista...`);
+      const items = parseM3U(text);
+      console.log(`📺 ${items.length} items encontrados`);
+      allItems = allItems.concat(items);
+      console.log(`📦 Total acumulado: ${allItems.length}`);
     } catch (err) {
       console.error(`❌ Error descargando ${url}:`, err.message);
     }
   }
-  console.log(`📋 Items crudos: ${allItems.length}`);
+  console.log(`🧩 Agrupando contenido...`);
   const grouped = groupContent(allItems);
-  console.log(`✅ ${grouped.movies.length} películas | ${Object.keys(grouped.series).length} series`);
+  console.log(`✅ ${grouped.movies.length} películas`);
+  console.log(`✅ ${Object.keys(grouped.series).length} series`);
   return grouped;
 }
 
