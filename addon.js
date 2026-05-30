@@ -1,6 +1,7 @@
 const express = require("express");
 const path    = require("path");
 const crypto  = require("crypto");
+const fs      = require("fs");
 const { parseM3U, groupContent, cleanTitleForTMDB } = require("./parse-m3u");
 
 const app  = express();
@@ -13,7 +14,36 @@ app.use((req, res, next) => {
   next();
 });
 
-const configStore = new Map();
+// ─────────────────────────────────────────────
+// CONFIG STORE — persiste en disco
+// Sobrevive reinicios de Render
+// ─────────────────────────────────────────────
+
+const CONFIG_FILE = path.join(__dirname, "configs.json");
+
+function loadConfigStore() {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      const data = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
+      console.log(`📂 ${Object.keys(data).length} configs cargadas desde disco`);
+      return new Map(Object.entries(data));
+    }
+  } catch (err) {
+    console.error("❌ Error cargando configs desde disco:", err.message);
+  }
+  return new Map();
+}
+
+function persistConfigStore() {
+  try {
+    const obj = Object.fromEntries(configStore);
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(obj, null, 2), "utf8");
+  } catch (err) {
+    console.error("❌ Error guardando configs en disco:", err.message);
+  }
+}
+
+const configStore = loadConfigStore();
 
 function saveConfig(config) {
   const id = crypto
@@ -22,6 +52,7 @@ function saveConfig(config) {
     .digest("hex")
     .slice(0, 12);
   configStore.set(id, config);
+  persistConfigStore();
   return id;
 }
 
@@ -406,17 +437,29 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
+
+  // Prioridad 1: variables de entorno de Render
   const envUrls = process.env.M3U_URLS
     ? process.env.M3U_URLS.split(",").map(u => u.trim()).filter(Boolean)
     : process.env.M3U_URL
       ? [process.env.M3U_URL.trim()]
       : [];
+
   if (envUrls.length) {
     const config = { m3uUrls: envUrls };
     if (process.env.TMDB_API_KEY) config.tmdbApiKey = process.env.TMDB_API_KEY;
     const id = saveConfig(config);
     await initData(config, id);
-  } else {
-    console.log("⚠️  Sin listas configuradas — configura desde /configure");
+    return;
   }
+
+  // Prioridad 2: última config guardada en disco (sobrevive reinicios)
+  if (configStore.size > 0) {
+    const [lastId, lastConfig] = [...configStore.entries()].pop();
+    console.log(`🔁 Restaurando config guardada (${lastId})...`);
+    await initData(lastConfig, lastId);
+    return;
+  }
+
+  console.log("⚠️  Sin listas configuradas — configura desde /configure");
 });
