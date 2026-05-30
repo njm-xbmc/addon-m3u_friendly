@@ -1,7 +1,7 @@
 const express = require("express");
 const path    = require("path");
 const crypto  = require("crypto");
-const { parseM3U, groupContent } = require("./parse-m3u");
+const { parseM3U, groupContent, cleanTitleForTMDB } = require("./parse-m3u");
 
 const app  = express();
 const PORT = process.env.PORT || 7000;
@@ -12,10 +12,6 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "*");
   next();
 });
-
-// ─────────────────────────────────────────────
-// CONFIG STORE
-// ─────────────────────────────────────────────
 
 const configStore = new Map();
 
@@ -33,11 +29,6 @@ function getConfig(id) {
   return configStore.get(id) || null;
 }
 
-// ─────────────────────────────────────────────
-// ESTADO GLOBAL — una sola carga de datos
-// Se recarga cuando el usuario actualiza su config
-// ─────────────────────────────────────────────
-
 let globalData = {
   movies:          [],
   series:          {},
@@ -48,10 +39,6 @@ let globalData = {
   configId:        null,
   ready:           false
 };
-
-// ─────────────────────────────────────────────
-// NORMALIZE
-// ─────────────────────────────────────────────
 
 function normalize(str = "") {
   return str
@@ -71,13 +58,9 @@ function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-// ─────────────────────────────────────────────
-// TMDB
-// ─────────────────────────────────────────────
-
 async function searchTMDB(title, type, tmdbCache, apiKey) {
   if (!apiKey) return null;
-  const clean = normalize(title);
+  const clean = normalize(cleanTitleForTMDB(title));
   if (clean in tmdbCache) return tmdbCache[clean];
   try {
     const endpoint  = type === "series" ? "tv" : "movie";
@@ -101,24 +84,12 @@ async function searchTMDB(title, type, tmdbCache, apiKey) {
 
 function chunks(arr, size) {
   const result = [];
-
-  for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
-  }
-
+  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
   return result;
 }
 
 async function prefetchTMDB(data) {
-  const {
-    movies,
-    series,
-    tmdbCache,
-    movieImdbIndex,
-    seriesImdbIndex,
-    apiKey
-  } = data;
-
+  const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = data;
   if (!apiKey) return;
 
   const movieList  = movies.filter(m => !m.id.startsWith("tt"));
@@ -131,86 +102,44 @@ async function prefetchTMDB(data) {
   let resolvedMovies = 0;
   let resolvedSeries = 0;
 
-  // ─────────────────────────────────────────
-  // PELÍCULAS
-  // ─────────────────────────────────────────
-
   for (const batch of chunks(movieList, 4)) {
-
     await Promise.all(batch.map(async movie => {
       try {
-        const imdb = await searchTMDB(
-          movie.title,
-          "movie",
-          tmdbCache,
-          apiKey
-        );
-
-        if (imdb) {
-          movieImdbIndex[imdb] = movie.id;
-          movie.id = imdb;
-          resolvedMovies++;
-        }
-
+        const imdb = await searchTMDB(movie.title, "movie", tmdbCache, apiKey);
+        if (imdb) { movieImdbIndex[imdb] = movie.id; movie.id = imdb; resolvedMovies++; }
       } catch (err) {
         console.error(`❌ TMDB movie error: ${movie.title}`);
       }
     }));
-
     console.log(`🎬 Películas resueltas: ${resolvedMovies}/${movieList.length}`);
-
     await sleep(400);
   }
 
   console.log(`✅ Películas terminadas`);
 
-  // ─────────────────────────────────────────
-  // SERIES
-  // ─────────────────────────────────────────
-
   for (const batch of chunks(seriesList, 4)) {
-
     await Promise.all(batch.map(async show => {
       try {
-        const imdb = await searchTMDB(
-          show.title,
-          "series",
-          tmdbCache,
-          apiKey
-        );
-
-        if (imdb) {
-          seriesImdbIndex[imdb] = show.id;
-          show.id = imdb;
-          resolvedSeries++;
-        }
-
+        const imdb = await searchTMDB(show.title, "series", tmdbCache, apiKey);
+        if (imdb) { seriesImdbIndex[imdb] = show.id; show.id = imdb; resolvedSeries++; }
       } catch (err) {
         console.error(`❌ TMDB series error: ${show.title}`);
       }
     }));
-
     console.log(`📺 Series resueltas: ${resolvedSeries}/${seriesList.length}`);
-
     await sleep(400);
   }
 
   console.log(`✅ Pre-carga TMDB completada`);
 }
 
-// ─────────────────────────────────────────────
-// CARGAR LISTA (SECUENCIAL COMO EL NORMAL)
-// ─────────────────────────────────────────────
 async function loadList(m3uUrls) {
   let allItems = [];
   for (const url of m3uUrls) {
     try {
       console.log(`📥 Descargando: ${url}`);
       const res = await fetch(url);
-      if (!res.ok) {
-        console.error(`❌ HTTP ${res.status}: ${url}`);
-        continue;
-      }
+      if (!res.ok) { console.error(`❌ HTTP ${res.status}: ${url}`); continue; }
       const text = await res.text();
       console.log(`🧠 Parseando lista...`);
       const items = parseM3U(text);
@@ -228,16 +157,10 @@ async function loadList(m3uUrls) {
   return grouped;
 }
 
-// ─────────────────────────────────────────────
-// INICIALIZAR / RECARGAR DATOS GLOBALES
-// ─────────────────────────────────────────────
-
 async function initData(config, configId) {
   console.log(`🔄 Cargando listas...`);
   globalData.ready = false;
-
   const { movies, series } = await loadList(config.m3uUrls);
-
   globalData = {
     movies,
     series,
@@ -248,16 +171,11 @@ async function initData(config, configId) {
     configId,
     ready:           true
   };
-
   console.log(`✅ Datos cargados y listos`);
   prefetchTMDB(globalData).catch(err =>
     console.error("❌ Error en pre-carga TMDB:", err)
   );
 }
-
-// ─────────────────────────────────────────────
-// LOGO
-// ─────────────────────────────────────────────
 
 const LOGO_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'>
   <defs>
@@ -278,17 +196,11 @@ const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64
 const STREMIO_SIGNATURE =
   "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..drO4si40GNH5_7aW8jgB9g.-1ysZnzhUaDVuZwvH2qcKs-pGPZ5D1ikiZQG1OfrWSNLrdVAU4wiuI1zXj2LtWNyn-ckw9K3be7ufwYrfXra0ty2W72J5wibK6spyF0n20oc925LpgsA2yhZvfYpGWeh.1RFI7MSVY2fm6IKI7dOqyw";
 
-// ─────────────────────────────────────────────
-// RUTAS
-// ─────────────────────────────────────────────
-
 app.get("/", (req, res) => res.redirect("/configure"));
 
 app.get("/configure", (req, res) => {
   res.sendFile(path.join(__dirname, "configure.html"));
 });
-
-// ─── API: guardar config y recargar datos ────
 
 app.post("/api/config", async (req, res) => {
   const { m3uUrls, tmdbApiKey } = req.body;
@@ -298,18 +210,13 @@ app.post("/api/config", async (req, res) => {
   const config = { m3uUrls };
   if (tmdbApiKey) config.tmdbApiKey = tmdbApiKey;
   const id = saveConfig(config);
-
-  // Recargar datos en segundo plano si la config cambió
   if (id !== globalData.configId) {
     initData(config, id).catch(err =>
       console.error("❌ Error al recargar datos:", err)
     );
   }
-
   res.json({ id });
 });
-
-// ─── Manifest base ────────────────────────────
 
 app.get("/manifest.json", (req, res) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
@@ -336,8 +243,6 @@ app.get("/manifest.json", (req, res) => {
     }
   });
 });
-
-// ─── Manifest usuario ─────────────────────────
 
 app.get("/:configId/manifest.json", (req, res) => {
   const config = getConfig(req.params.configId);
@@ -369,8 +274,6 @@ app.get("/:configId/manifest.json", (req, res) => {
   });
 });
 
-// ─── Catalog ─────────────────────────────────
-
 app.get("/:configId/catalog/:type/:id.json",        handleCatalog);
 app.get("/:configId/catalog/:type/:id/:extra.json", handleCatalog);
 
@@ -378,7 +281,6 @@ async function handleCatalog(req, res) {
   try {
     if (!getConfig(req.params.configId)) return res.json({ metas: [] });
     if (!globalData.ready)               return res.json({ metas: [] });
-
     const { type, id } = req.params;
     const extra  = req.params.extra
       ? Object.fromEntries(new URLSearchParams(req.params.extra))
@@ -386,7 +288,6 @@ async function handleCatalog(req, res) {
     const search = extra.search ? normalize(extra.search) : null;
     const skip   = parseInt(extra.skip || "0", 10);
     const PAGE   = 100;
-
     if (type === "movie" && id === "m3u_movies") {
       let results = globalData.movies;
       if (search) results = results.filter(m => normalize(m.title).includes(search));
@@ -396,7 +297,6 @@ async function handleCatalog(req, res) {
         }))
       });
     }
-
     if (type === "series" && id === "m3u_series") {
       let results = Object.values(globalData.series);
       if (search) results = results.filter(s => normalize(s.title).includes(search));
@@ -406,7 +306,6 @@ async function handleCatalog(req, res) {
         }))
       });
     }
-
     res.json({ metas: [] });
   } catch (err) {
     console.error("❌ Catalog error:", err);
@@ -414,16 +313,12 @@ async function handleCatalog(req, res) {
   }
 }
 
-// ─── Meta ─────────────────────────────────────
-
 app.get("/:configId/meta/:type/:id.json", async (req, res) => {
   try {
     if (!getConfig(req.params.configId)) return res.json({ meta: null });
     if (!globalData.ready)               return res.json({ meta: null });
-
     const { type, id } = req.params;
     const { movies, series, tmdbCache, movieImdbIndex, seriesImdbIndex, apiKey } = globalData;
-
     if (type === "movie") {
       const slugKey = movieImdbIndex[id] || id;
       let movie = movies.find(m => m.id === id || m.id === slugKey)
@@ -437,7 +332,6 @@ app.get("/:configId/meta/:type/:id.json", async (req, res) => {
         meta: { id: movie.id, type: "movie", name: movie.title, poster: movie.poster }
       });
     }
-
     if (type === "series") {
       const slugKey = seriesImdbIndex[id] || id;
       let show = series[slugKey] || series[id]
@@ -459,7 +353,6 @@ app.get("/:configId/meta/:type/:id.json", async (req, res) => {
         }
       });
     }
-
     res.json({ meta: null });
   } catch (err) {
     console.error("❌ Meta error:", err);
@@ -467,16 +360,12 @@ app.get("/:configId/meta/:type/:id.json", async (req, res) => {
   }
 });
 
-// ─── Streams ──────────────────────────────────
-
 app.get("/:configId/stream/:type/:id.json", async (req, res) => {
   try {
     if (!getConfig(req.params.configId)) return res.json({ streams: [] });
     if (!globalData.ready)               return res.json({ streams: [] });
-
     const { type, id } = req.params;
     const { movies, series, movieImdbIndex, seriesImdbIndex } = globalData;
-
     if (type === "movie") {
       const slugKey = movieImdbIndex[id] || id;
       const movie = movies.find(m => m.id === id || m.id === slugKey)
@@ -488,7 +377,6 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
         }))
       });
     }
-
     if (type === "series") {
       const parts   = id.split(":");
       const rawId   = parts[0];
@@ -509,7 +397,6 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
         }))
       });
     }
-
     res.json({ streams: [] });
   } catch (err) {
     console.error("❌ Stream error:", err);
@@ -517,20 +404,13 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// START
-// ─────────────────────────────────────────────
-
 app.listen(PORT, async () => {
   console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
-
-  // Cargar desde variables de entorno al arrancar (compatibilidad con addon personal)
   const envUrls = process.env.M3U_URLS
     ? process.env.M3U_URLS.split(",").map(u => u.trim()).filter(Boolean)
     : process.env.M3U_URL
       ? [process.env.M3U_URL.trim()]
       : [];
-
   if (envUrls.length) {
     const config = { m3uUrls: envUrls };
     if (process.env.TMDB_API_KEY) config.tmdbApiKey = process.env.TMDB_API_KEY;
