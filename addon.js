@@ -435,6 +435,22 @@ app.get("/:configId/stream/:type/:id.json", async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// KEEP-ALIVE — ping cada 14 min para evitar que
+// Render duerma el servicio en plan gratuito
+// ─────────────────────────────────────────────
+
+function startKeepAlive(baseUrl) {
+  setInterval(async () => {
+    try {
+      await fetch(`${baseUrl}/manifest.json`);
+      console.log(`💓 Keep-alive OK`);
+    } catch (err) {
+      console.error(`❌ Keep-alive error:`, err.message);
+    }
+  }, 14 * 60 * 1000);
+}
+
 app.listen(PORT, async () => {
   console.log(`🚀 M3U IPTV corriendo en http://localhost:${PORT}`);
 
@@ -450,6 +466,12 @@ app.listen(PORT, async () => {
     if (process.env.TMDB_API_KEY) config.tmdbApiKey = process.env.TMDB_API_KEY;
     const id = saveConfig(config);
     await initData(config, id);
+
+    const publicUrl = process.env.RENDER_EXTERNAL_URL;
+    if (publicUrl) {
+      console.log(`💓 Keep-alive iniciado: ${publicUrl}`);
+      startKeepAlive(publicUrl);
+    }
     return;
   }
 
@@ -458,8 +480,21 @@ app.listen(PORT, async () => {
     const [lastId, lastConfig] = [...configStore.entries()].pop();
     console.log(`🔁 Restaurando config guardada (${lastId})...`);
     await initData(lastConfig, lastId);
+
+    const publicUrl = process.env.RENDER_EXTERNAL_URL;
+    if (publicUrl) {
+      console.log(`💓 Keep-alive iniciado: ${publicUrl}`);
+      startKeepAlive(publicUrl);
+    }
     return;
   }
 
   console.log("⚠️  Sin listas configuradas — configura desde /configure");
+
+  // Iniciar keep-alive usando la URL pública de Render si está disponible
+  const publicUrl = process.env.RENDER_EXTERNAL_URL;
+  if (publicUrl) {
+    console.log(`💓 Keep-alive iniciado: ${publicUrl}`);
+    startKeepAlive(publicUrl);
+  }
 });
