@@ -253,7 +253,7 @@ app.get("/manifest.json", (req, res) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   res.json({
     id:          "com.m3uiptv.public",
-    version:     "1.0.2",
+    version:     "1.1.0",
     name:        "M3U IPTV",
     description: "Stream your personal M3U playlist or Xtream Codes IPTV in Stremio. Auto-resolves IMDb IDs via TMDB. By Esmequiinn (reddit user Thin-Soil-4159)",
     logo:        "https://raw.githubusercontent.com/Esmequiinn/addon-m3u_friendly/main/logo.svg",
