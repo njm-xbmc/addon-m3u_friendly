@@ -6,6 +6,8 @@
 ![Stremio](https://img.shields.io/badge/Stremio-Addon-black?style=for-the-badge&logo=stremio&logoColor=white&color=8A2BE2)
 ![Railway](https://img.shields.io/badge/Railway-Deploy-black?style=for-the-badge&logo=railway&logoColor=white&color=0B0D0E)
 
+[Español](README.es.md)
+
 Public version of the M3U IPTV addon for Stremio. Each user configures their own M3U list and TMDB Key from the addon's web page — no code or environment variables needed.
 
 ---
