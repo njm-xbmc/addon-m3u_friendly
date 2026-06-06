@@ -13,9 +13,9 @@ Versión pública del addon M3U IPTV para Stremio. Cada usuario configura su pro
 ## 🚀 Cómo funciona
 
 1. El usuario abre la URL del addon en el navegador
-1. Llena el formulario con su URL de lista M3U y su TMDB API Key
-1. El addon genera una URL de instalación personalizada
-1. Pega esa URL en Stremio → listo
+2. Llena el formulario con su URL de lista M3U y su TMDB API Key
+3. El addon genera una URL de instalación personalizada
+4. Pega esa URL en Stremio → listo
 
 Cada usuario tiene su propia configuración completamente independiente y privada.
 
@@ -31,6 +31,7 @@ Cada usuario tiene su propia configuración completamente independiente y privad
 - Buscador en el catálogo
 - Múltiples streams por título
 - Integración global con Stremio y Cinemeta
+- Ping keep-alive integrado cada 14 minutos — el servicio nunca se duerme
 
 -----
 
@@ -63,7 +64,7 @@ README.md       ← Esta guía
 
 Elige la plataforma que prefieras:
 
-Solo necesitas presionar un boton y listo, el deploy en automatico. 
+Solo necesitas presionar un botón y listo, el deploy es automático.
 
 ### Opción 1 — Railway
 
@@ -84,11 +85,11 @@ El servicio nunca se duerme por inactividad pero el plan gratuito incluye solo $
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
-En render por el Blueprint es de pago pero tambien puedes hacerlo manualmente lo cual es gratuito, el plan gratuito es ilimitado, pero el servicio duerme tras 15 minutos de inactividad.
+En Render por el Blueprint es de pago, pero también puedes hacerlo manualmente, lo cual es gratuito. El addon incluye un ping keep-alive integrado cada 14 minutos que mantiene el servicio siempre activo.
 
 **Pasos:**
 
-1. Has Fork a este repositorio
+1. Haz Fork a este repositorio
 2. Ir a [https://render.com](https://render.com)
 3. New + → Web Service
 4. Conectar GitHub → seleccionar tu fork
@@ -103,7 +104,7 @@ npm install
 npm start
 ```
 
-4. Abrir la URL que Render genera 
+5. Abrir la URL que Render genera
 
 > No necesitas configurar ninguna variable de entorno en Render — todo lo maneja el formulario del addon.
 
@@ -121,7 +122,6 @@ https://tu-addon.railway.app/
 https://tu-addon.onrender.com/
 ```
 
-
 Llena el formulario con tu lista M3U y tu TMDB Key, genera tu URL e instala en Stremio.
 
 -----
@@ -131,9 +131,9 @@ Llena el formulario con tu lista M3U y tu TMDB Key, genera tu URL e instala en S
 Para que los IDs de IMDb se resuelvan automáticamente:
 
 1. Crea cuenta en [themoviedb.org](https://www.themoviedb.org/signup)
-1. Ve a [Settings → API](https://www.themoviedb.org/settings/api)
-1. Copia tu API Key gratuita
-1. Pégala en el formulario del addon
+2. Ve a [Settings → API](https://www.themoviedb.org/settings/api)
+3. Copia tu API Key gratuita
+4. Pégala en el formulario del addon
 
 -----
 
@@ -143,31 +143,30 @@ El addon guarda en memoria la lista y los IDs resueltos de cada usuario.
 
 - El cache dura **6 horas** — después se recarga la lista automáticamente
 - Si el servidor se reinicia, el cache se borra y se reconstruye al primer request
-- En el plan gratuito de Render el servicio duerme tras 15 minutos de inactividad
-- Railway gratis: el servicio nunca duerme — el cache dura mucho más tiempo, pero tiene un límite de $5 de crédito al mes
+- Railway gratis: el servicio nunca se duerme — el cache dura mucho más tiempo, pero tiene un límite de $5 de crédito al mes
 
 -----
 
 # 🛠 Procesamiento manual con clean-m3u.js (Opcional)
-Si prefieres tener los IDs resueltos desde el primer segundo sin esperar la pre-carga automática del addon, puedes usar el script ```clean-m3u.js```
-para procesar tu lista manualmente antes de subirla.
+
+Si prefieres tener los IDs resueltos desde el primer segundo sin esperar la pre-carga automática del addon, puedes usar el script `clean-m3u.js` para procesar tu lista manualmente antes de subirla.
 
 [Descargar clean-m3u.js](https://github.com/Esmequiinn/addon-m3u/releases/download/IMDBCD/clean-m3u.js)
 
 Este script:
 
-* limpia títulos automáticamente
-* detecta películas y series
-* busca metadata usando TMDB
-* agrega IMDb IDs reales (`tvg-id="tt1234567"`)
-* guarda progreso automáticamente
-* permite continuar después sin perder avance
+- Limpia títulos automáticamente
+- Detecta películas y series
+- Busca metadata usando TMDB
+- Agrega IMDb IDs reales (`tvg-id="tt1234567"`)
+- Guarda progreso automáticamente
+- Permite continuar después sin perder avance
 
 ---
 
 # Instalar dependencias
 
-```bash id="lci4m4"
+```bash
 npm install axios
 ```
 
@@ -177,19 +176,19 @@ npm install axios
 
 Abre:
 
-```txt id="lci4m5"
+```
 clean-m3u.js
 ```
 
 y reemplaza:
 
-```js id="lci4m6"
+```js
 const API_KEY = "PON_TU_TMDB_API_KEY";
 ```
 
 por tu API real:
 
-```js id="lci4m7"
+```js
 const API_KEY = "TU_API_KEY";
 ```
 
@@ -199,13 +198,13 @@ const API_KEY = "TU_API_KEY";
 
 Coloca tu lista M3U como:
 
-```txt id="lci4m8"
+```
 lista.m3u
 ```
 
 Luego ejecuta:
 
-```bash id="lci4m9"
+```bash
 node clean-m3u.js
 ```
 
@@ -215,10 +214,10 @@ node clean-m3u.js
 
 El script:
 
-* guarda progreso automáticamente
-* crea backups
-* permite cerrar con `CTRL + C`
-* continúa donde quedó la próxima vez
+- Guarda progreso automáticamente
+- Crea backups
+- Permite cerrar con `CTRL + C`
+- Continúa donde quedó la próxima vez
 
 ---
 
@@ -226,7 +225,7 @@ El script:
 
 El script detecta automáticamente:
 
-```txt id="lci4ma"
+```
 S01E01
 S02E05
 etc
@@ -240,13 +239,13 @@ y usa el IMDb ID correcto de toda la serie.
 
 Antes:
 
-```txt id="lci4mb"
+```
 #EXTINF:-1 tvg-name="Breaking Bad S01E01",Breaking Bad S01E01
 ```
 
 Después:
 
-```txt id="lci4mc"
+```
 #EXTINF:-1 tvg-name="Breaking Bad" tvg-id="tt0903747",Breaking Bad
 ```
 
@@ -280,13 +279,16 @@ El addon necesita una URL que descargue el archivo directamente.
 
 Ejemplo correcto:
 
-```txt
+```
 https://servidor.com/lista.m3u
 ```
+
 Ejemplo incorrecto:
-```txt
+
+```
 https://drive.google.com/file/d/xxxxx/view
 ```
+
 Porque esa URL abre una página web y NO el archivo directamente.
 
 # GitHub Releases (Recomendado)
@@ -297,7 +299,7 @@ La forma más estable y sencilla de alojar tu lista M3U es usando GitHub Release
 
 1. Subir tu archivo:
 
-```txt
+```
 lista-progress.m3u
 ```
 
@@ -305,7 +307,7 @@ a tu repositorio.
 
 2. Ir a:
 
-```txt
+```
 Releases → Create Release
 ```
 
@@ -317,7 +319,7 @@ Releases → Create Release
 
 Ejemplo:
 
-```txt
+```
 https://github.com/usuario/repo/releases/download/iptv/lista-progress.m3u
 ```
 
@@ -331,13 +333,13 @@ Google Drive también funciona, pero debes convertir el enlace compartido en un 
 
 Tu enlace normal se verá así:
 
-```txt
+```
 https://drive.google.com/file/d/FILE_ID/view
 ```
 
 Debes extraer el `FILE_ID` y convertirlo a:
 
-```txt
+```
 https://drive.google.com/uc?export=download&id=FILE_ID
 ```
 
@@ -352,19 +354,19 @@ En Dropbox:
 
 El enlace normalmente termina en:
 
-```txt
+```
 ?dl=0
 ```
 
 Debes cambiarlo por:
 
-```txt
+```
 ?dl=1
 ```
 
 o:
 
-```txt
+```
 ?raw=1
 ```
 
@@ -376,15 +378,14 @@ para forzar descarga directa.
 
 Cuando Render inicie:
 
-- descargará automáticamente la lista
-- parseará películas y series
-- detectará streams
-- agrupará episodios
-- cargará IMDb IDs
-- integrará los streams directamente en Stremio
+- Descargará automáticamente la lista
+- Parseará películas y series
+- Detectará streams
+- Agrupará episodios
+- Cargará IMDb IDs
+- Integrará los streams directamente en Stremio
 
 ---
-
 
 # 📁 Archivos usados por el script
 
@@ -394,7 +395,7 @@ Cuando Render inicie:
 | `lista-progress.m3u` | Lista procesada con IMDb IDs       |
 | `lista-backup.m3u`   | Backup automático                  |
 
-
+---
 
 # 🔄 Actualizar la lista
 
@@ -414,10 +415,9 @@ Para reiniciar:
 
 ## ❓ Problemas comunes
 
-|Problema                        |Solución                                          |
-|--------------------------------|--------------------------------------------------|
-|No aparecen películas           |Verifica que la URL M3U sea directa y accesible   |
-|Los IDs no se resuelven         |Verifica tu TMDB API Key en el formulario         |
-|Un título no aparece globalmente|Ábrelo desde el catálogo para forzar la resolución|
-|Render tarda en responder       |El plan gratuito duerme tras 15 min de inactividad|
-|Se agotó el credito de Railway  |El plan gratuito tiene $5/mes upgrade o cambia a render|
+| Problema                         | Solución                                                        |
+| -------------------------------- | --------------------------------------------------------------- |
+| No aparecen películas            | Verifica que la URL M3U sea directa y accesible                 |
+| Los IDs no se resuelven          | Verifica tu TMDB API Key en el formulario                       |
+| Un título no aparece globalmente | Ábrelo desde el catálogo para forzar la resolución              |
+| Se agotó el crédito de Railway   | El plan gratuito tiene $5/mes — upgrade o cámbiate a Render     |
