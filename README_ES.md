@@ -88,9 +88,10 @@ En render por el Blueprint es de pago pero tambien puedes hacerlo manualmente lo
 
 **Pasos:**
 
-1. Ir a [https://render.com](https://render.com)
-2. New + → Web Service
-3. Conectar GitHub → seleccionar tu fork
+1. Has Fork a este repositorio
+2. Ir a [https://render.com](https://render.com)
+3. New + → Web Service
+4. Conectar GitHub → seleccionar tu fork
 
 **Build Command:**
 ```
