@@ -110,7 +110,7 @@ Hugging Face Spaces never sleep and have no credit limit. Uses the Python versio
 2. SDK: **Docker**
 3. Upload all files from the `python/` folder of this repo
 4. The Space builds and starts automatically
-5. Open the Space URL → `/configure`
+5. Go to `App` and configure it
 
 ---
 
