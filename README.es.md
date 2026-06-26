@@ -92,15 +92,7 @@ El servicio nunca se duerme pero el plan gratuito incluye solo $5 de crédito al
 
 ---
 
-### Opción 3 — Koyeb (Node.js) — Gratis, sin sueño
-
-[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Esmequiinn/addon-m3u_friendly&branch=main&run_command=npm%20start&build_command=npm%20install&name=m3u-iptv-addon)
-
-El plan gratuito corre 24/7 sin dormir y sin límite de crédito. Haz clic, conecta tu cuenta de GitHub y despliega.
-
----
-
-### Opción 4 — Hugging Face Spaces (Python) — Gratis, sin sueño
+### Opción 3 — Hugging Face Spaces (Python) — Gratis, sin sueño
 
 Los Spaces de Hugging Face nunca se duermen y no tienen límite de crédito. Usa la versión Python de la carpeta `python/`.
 
@@ -112,7 +104,7 @@ Los Spaces de Hugging Face nunca se duermen y no tienen límite de crédito. Usa
 
 ---
 
-### Opción 5 — Fly.io (Python) — Plan gratuito
+### Opción 4 — Fly.io (Python) — Plan gratuito
 
 Fly.io ofrece 3 VMs compartidas gratuitas. Requiere el [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/).
 
