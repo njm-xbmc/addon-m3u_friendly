@@ -11,7 +11,7 @@ M3U IPTV addon for Stremio. Each user configures their own M3U list and TMDB Key
 
 ---
 
-## 🚀 How it works
+## How it works
 
 1. Open the addon URL in your browser
 2. Fill in the form with your M3U playlist URL and TMDB API Key
@@ -22,7 +22,7 @@ Each user has their own completely independent and private configuration.
 
 ---
 
-## ✅ Features
+## Features
 
 - Built-in web configuration form
 - Support for multiple M3U playlists
@@ -58,7 +58,7 @@ addon-m3u_friendly/
 
 ---
 
-## 🚀 Deploy options
+##  Deploy options
 
 | Platform | Runtime | One-click | Sleeps | Free limit |
 |---|---|---|---|---|
@@ -70,7 +70,7 @@ addon-m3u_friendly/
 
 ---
 
-### ⚡ Option 1 — Railway (Node.js)
+### Option 1 — Railway (Node.js)
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/m3u-addon?referralCode=tn36RQ&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
@@ -80,7 +80,7 @@ The service never sleeps but the free plan includes only $5 credit/month.
 
 ---
 
-### 🌐 Option 2 — Render (Node.js)
+### Option 2 — Render (Node.js)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
@@ -116,7 +116,7 @@ Hugging Face Spaces never sleep and have no credit limit. Uses the Python versio
 
 ---
 
-### ✈️ Option 5 — Fly.io (Python) — Free tier
+### Option 5 — Fly.io (Python) — Free tier
 
 Fly.io offers 3 free shared VMs. Requires the [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/).
 
@@ -177,7 +177,7 @@ If you want IMDb IDs resolved from the first second without waiting for backgrou
 
 ---
 
-## 🔗 Hosting your M3U list
+## Hosting your M3U list
 
 The addon needs a **direct download URL** for your M3U file.
 
