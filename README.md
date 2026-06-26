@@ -64,7 +64,6 @@ addon-m3u_friendly/
 |---|---|---|---|---|
 | Railway | Node.js | ✅ | ❌ | $5/month |
 | Render | Node.js | ✅ | ⚠️ 15 min | Unlimited |
-| Koyeb | Node.js | ✅ | ❌ | Unlimited |
 | Hugging Face | Python | Manual | ❌ | Unlimited |
 | Fly.io | Python | Manual | ❌ | 3 free VMs |
 
@@ -94,15 +93,7 @@ The service never sleeps but the free plan includes only $5 credit/month.
 
 ---
 
-### 🚀 Option 3 — Koyeb (Node.js) — Free, no sleep
-
-[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Esmequiinn/addon-m3u_friendly&branch=main&run_command=npm%20start&build_command=npm%20install&name=m3u-iptv-addon)
-
-Free tier runs 24/7 with no sleep and no credit limit. Click the button, connect your GitHub account, and deploy.
-
----
-
-### 🤗 Option 4 — Hugging Face Spaces (Python) — Free, no sleep
+### Option 3 — Hugging Face Spaces (Python) — Free, no sleep
 
 Hugging Face Spaces never sleep and have no credit limit. Uses the Python version from the `python/` folder.
 
@@ -114,7 +105,7 @@ Hugging Face Spaces never sleep and have no credit limit. Uses the Python versio
 
 ---
 
-### Option 5 — Fly.io (Python) — Free tier
+### Option 4 — Fly.io (Python) — Free tier
 
 Fly.io offers 3 free shared VMs. Requires the [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/).
 
