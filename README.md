@@ -112,8 +112,6 @@ Hugging Face Spaces never sleep and have no credit limit. Uses the Python versio
 4. The Space builds and starts automatically
 5. Open the Space URL → `/configure`
 
-> Or duplicate the demo Space: [EsmeQuiinn/M3U-add](https://huggingface.co/spaces/EsmeQuiinn/M3U-add)
-
 ---
 
 ### Option 5 — Fly.io (Python) — Free tier
