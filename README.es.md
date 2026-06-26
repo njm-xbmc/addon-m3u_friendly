@@ -62,7 +62,6 @@ addon-m3u_friendly/
 |---|---|---|---|---|
 | Railway | Node.js | ✅ | ❌ | $5/mes |
 | Render | Node.js | ✅ | ⚠️ 15 min | Ilimitado |
-| Koyeb | Node.js | ✅ | ❌ | Ilimitado |
 | Hugging Face | Python | Manual | ❌ | Ilimitado |
 | Fly.io | Python | Manual | ❌ | 3 VMs gratis |
 
