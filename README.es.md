@@ -135,7 +135,6 @@ El addon guarda en memoria la lista y los IDs resueltos de cada usuario.
 |---|---|
 | Railway | Nunca duerme — cache dura hasta reinicio |
 | Render (gratis) | Duerme tras 15 min — cache se borra al despertar |
-| Koyeb | Nunca duerme — cache persiste hasta reinicio |
 | Hugging Face | Nunca duerme — cache persiste hasta reinicio |
 | Fly.io | Nunca duerme — cache persiste hasta reinicio |
 
