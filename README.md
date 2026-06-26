@@ -1,22 +1,24 @@
 # 🎬 M3U IPTV Addon — Friendly Version
 
-![Claude](https://img.shields.io/badge/Claude-Anthropic-black?style=for-the-badge&logo=anthropic&logoColor=white&color=CC785C)
-![Render](https://img.shields.io/badge/Render-Deploy-black?style=for-the-badge&logo=render&logoColor=white&color=46E3B7)
-![Node.js](https://img.shields.io/badge/Node.js-Runtime-black?style=for-the-badge&logo=nodedotjs&logoColor=white&color=339933)
-![Stremio](https://img.shields.io/badge/Stremio-Addon-black?style=for-the-badge&logo=stremio&logoColor=white&color=8A2BE2)
-![Railway](https://img.shields.io/badge/Railway-Deploy-black?style=for-the-badge&logo=railway&logoColor=white&color=0B0D0E)
+[![Claude](https://img.shields.io/badge/Claude-Anthropic-black?style=for-the-badge&logo=anthropic&logoColor=white&color=CC785C)](https://anthropic.com)
+[![Render](https://img.shields.io/badge/Render-Deploy-black?style=for-the-badge&logo=render&logoColor=white&color=46E3B7)](https://render.com)
+[![Node.js](https://img.shields.io/badge/Node.js-Runtime-black?style=for-the-badge&logo=nodedotjs&logoColor=white&color=339933)](https://nodejs.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-black?style=for-the-badge&logo=python&logoColor=white&color=3776AB)](https://python.org)
+[![Stremio](https://img.shields.io/badge/Stremio-Addon-black?style=for-the-badge&logo=stremio&logoColor=white&color=8A2BE2)](https://stremio.com)
+[![Railway](https://img.shields.io/badge/Railway-Deploy-black?style=for-the-badge&logo=railway&logoColor=white&color=0B0D0E)](https://railway.app)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Space-black?style=for-the-badge&logo=huggingface&logoColor=white&color=FFD21E)](https://huggingface.co)
 
 [ Readme en Español ](README.es.md)
 
-Public version of the M3U IPTV addon for Stremio. Each user configures their own M3U list and TMDB Key from the addon's web page — no code or environment variables needed.
+M3U IPTV addon for Stremio. Each user configures their own M3U list and TMDB Key from the addon's web page — no code or environment variables needed.
 
 ---
 
 ## 🚀 How it works
 
-1. The user opens the addon URL in a browser
-2. Fills in the form with their M3U list URL and TMDB API Key
-3. The addon generates a personalized installation URL
+1. Open the addon URL in your browser
+2. Fill in the form with your M3U playlist URL and TMDB API Key
+3. The addon generates a personalized install URL
 4. Paste that URL into Stremio → done
 
 Each user has their own completely independent and private configuration.
@@ -26,111 +28,134 @@ Each user has their own completely independent and private configuration.
 ## ✅ Features
 
 - Built-in web configuration form
-- Support for multiple M3U lists
+- Support for multiple M3U playlists
 - Automatic IMDb ID resolution via TMDB on startup
-- Fallback: resolution when opening from the catalog
-- Per-user in-memory cache (rebuilt on restart)
+- Fallback: on-demand resolution when opening from catalog
+- Per-user in-memory cache
 - Catalog search
 - Multiple streams per title
-- Global integration with Stremio and Cinemeta
-- Built-in keep-alive ping every 14 minutes — the service never goes to sleep
+- Global Stremio + Cinemeta integration
 
 ---
 
-The addon resolves IMDb IDs directly on Render/Railway without needing to manually edit your M3U list.
-On startup, it launches a background process that goes through all movies and series and queries TMDB to get their real IMDb ID (tt...).
-This process uses a limit of ~3 requests per second to stay within TMDB's free tier. Depending on the size of your list, it may take several minutes. During that time the catalog is already available and working normally.
-If the pre-load hasn't reached a specific title yet, the addon resolves it on the spot when you open that title directly from the catalog.
-
----
-
-⚠️ Titles whose ID hasn't been resolved yet won't appear as streams inside Stremio's global pages until they've been opened at least once from the addon's catalog, or until the pre-load reaches them.
-
----
-
-## 📁 Project files
+## 📁 Project structure
 
 ```
-addon.js        ← Express server with form and addon logic
-configure.html  ← Web configuration page
-parse-m3u.js    ← M3U list parser
-railway.json    ← Railway deploy configuration
-render.yaml     ← Render deploy configuration
-package.json    ← Dependencies
-README.md       ← This guide
+addon-m3u_friendly/
+├── addon.js           ← Node.js/Express server
+├── parse-m3u.js       ← M3U parser (Node.js)
+├── configure.html     ← Web configuration page
+├── package.json       ← Node.js dependencies
+├── railway.json       ← Railway deploy config
+├── render.yaml        ← Render deploy config (Node.js)
+├── README.md          ← This guide
+├── README.es.md       ← Spanish guide
+└── python/            ← Python/FastAPI version (for Hugging Face & others)
+    ├── addon.py
+    ├── parse_m3u.py
+    ├── configure.html
+    ├── requirements.txt
+    ├── Dockerfile
+    └── render.yaml
 ```
 
 ---
 
 ## 🚀 Deploy
 
-Choose the platform you prefer:
+This addon has two versions: **Node.js** (Railway, Render, Koyeb) and **Python** (Hugging Face Spaces, Fly.io, Koyeb, Render).
 
-Just press a button and you're done — deploy is automatic.
+---
 
-### Option 1 — Railway
+### ⚡ Option 1 — Railway (Node.js) — Easiest
 
-The service never sleeps due to inactivity, but the free plan includes only $5 of credit per month.
+One-click deploy. The service never sleeps but the free plan includes only $5 credit/month.
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/m3u-addon?referralCode=tn36RQ&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 **Or manually:**
 
-1. Go to [https://railway.app](https://railway.app)
+1. Go to [railway.app](https://railway.app)
 2. New Project → Deploy from GitHub repo
 3. Select your fork
-4. Railway automatically detects Node.js and runs `npm install` and `npm start`
-5. In Variables add if you want a fixed port: `PORT = 7000`
-6. Open the URL Railway generates → `/configure`
-
-### Option 2 — Render
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
-
-On Render via Blueprint it's paid, but you can also do it manually which is free. The addon includes a built-in keep-alive ping every 14 minutes that keeps the service always active — no sleeping.
-
-**Steps:**
-
-1. Fork this repository
-2. Go to [https://render.com](https://render.com)
-3. New + → Web Service
-4. Connect GitHub → select your fork
-
-**Build Command:**
-```
-npm install
-```
-
-**Start Command:**
-```
-npm start
-```
-
-4. Open the URL that Render generates
-
-> You don't need to configure any environment variables on Render — everything is handled by the addon's form.
+4. Railway auto-detects Node.js and runs `npm install` and `npm start`
+5. Optionally add `PORT = 7000` in Variables
+6. Open the Railway-generated URL → `/configure`
 
 ---
 
-### 3. Open the addon URL
+### 🌐 Option 2 — Render (Node.js) — Free unlimited
 
-When the deploy finishes, open:
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Esmequiinn/addon-m3u_friendly)
 
-```
-https://your-addon.railway.app/
-```
+> Blueprint deploy may require a payment method. For a 100% free deploy, use the manual method below.
 
-```
-https://your-addon.onrender.com/
-```
+**Manual setup:**
 
-Fill in the form with your M3U list and TMDB Key, generate your URL and install in Stremio.
+1. Go to [render.com](https://render.com)
+2. New + → Web Service → connect your GitHub fork
+3. **Build Command:** `npm install`
+4. **Start Command:** `npm start`
+5. Open the Render-generated URL
+
+> No environment variables needed — everything is handled by the addon's form.
+
+⚠️ The free plan sleeps after 15 minutes of inactivity. The addon includes a built-in keep-alive ping every 14 minutes to prevent this on paid plans.
+
+---
+
+### 🤗 Option 3 — Hugging Face Spaces (Python) — Free, no sleep
+
+Uses the Python version located in the `python/` folder. Hugging Face Spaces never sleep and have no credit limit.
+
+1. Go to [huggingface.co/new-space](https://huggingface.co/new-space)
+2. SDK: **Docker**
+3. Upload all files from the `python/` folder of this repo
+4. The Space will build and start automatically
+5. Open the Space URL → `/configure`
+
+> You can also duplicate the demo Space directly:
+> [EsmeQuiinn/M3U-add](https://huggingface.co/spaces/EsmeQuiinn/M3U-add)
+
+---
+
+### 🚀 Option 4 — Koyeb (Node.js or Python) — Free, no sleep
+
+Koyeb's free tier runs a service 24/7 with no sleep and no credit limit.
+
+**Node.js deploy:**
+
+1. Go to [koyeb.com](https://www.koyeb.com)
+2. Create App → GitHub → select your fork
+3. **Build command:** `npm install`
+4. **Run command:** `npm start`
+5. **Port:** `7860` (or whatever `PORT` is set to)
+
+**Python deploy:**
+
+1. Same steps but point to the `python/` subfolder
+2. **Build command:** `pip install -r python/requirements.txt`
+3. **Run command:** `uvicorn python.addon:app --host 0.0.0.0 --port 8000`
+4. **Port:** `8000`
+
+---
+
+### ✈️ Option 5 — Fly.io (Python) — Free tier
+
+Fly.io offers 3 free shared VMs. Uses the Python/Docker version.
+
+1. Install the [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/)
+2. `fly auth login`
+3. Inside the `python/` folder: `fly launch`
+4. Follow the prompts (choose the free plan, region closest to you)
+5. `fly deploy`
+6. Open the `.fly.dev` URL → `/configure`
 
 ---
 
 ## 🔑 TMDB API Key
 
-For IMDb IDs to be resolved automatically:
+To automatically resolve IMDb IDs:
 
 1. Create an account at [themoviedb.org](https://www.themoviedb.org/signup)
 2. Go to [Settings → API](https://www.themoviedb.org/settings/api)
@@ -143,282 +168,82 @@ For IMDb IDs to be resolved automatically:
 
 The addon stores each user's list and resolved IDs in memory.
 
-- The cache lasts **6 hours** — after that the list reloads automatically
-- If the server restarts, the cache is cleared and rebuilt on the first request
+| Platform | Cache behavior |
+|---|---|
+| Railway | Never sleeps, cache lasts until restart |
+| Render (free) | Sleeps after 15 min, cache resets on wake |
+| Hugging Face | Never sleeps, cache persists until restart |
+| Koyeb | Never sleeps, cache persists until restart |
+| Fly.io | Never sleeps, cache persists until restart |
 
 ---
 
-# 🛠 Manual processing with clean-m3u.js (Optional)
+## 🛠 Manual processing with clean-m3u.js (Optional)
 
-If you prefer to have IDs resolved from the very first second without waiting for the automatic pre-load, you can use `clean-m3u.js` to process your list manually before uploading it.
+If you want IMDb IDs resolved from the first second without waiting for background pre-loading, use `clean-m3u.js` to process your list manually before uploading.
 
 [Download clean-m3u.js](https://github.com/Esmequiinn/addon-m3u/releases/download/IMDBCD/clean-m3u.js)
 
 This script:
-
 - Cleans titles automatically
 - Detects movies and series
 - Searches metadata using TMDB
 - Adds real IMDb IDs (`tvg-id="tt1234567"`)
 - Saves progress automatically
-- Allows you to continue later without losing progress
+- Can resume from where it left off
 
----
-
-# Install dependencies
-
+**Install dependency:**
 ```bash
 npm install axios
 ```
 
----
+**Configure:**
 
-# Configure the script
-
-Open:
-
-```
-clean-m3u.js
-```
-
-and replace:
-
+Open `clean-m3u.js` and replace:
 ```js
 const API_KEY = "PUT_YOUR_TMDB_API_KEY";
 ```
 
-with your real API key:
+**Run:**
 
-```js
-const API_KEY = "YOUR_API_KEY";
-```
-
----
-
-# Run the script
-
-Place your M3U list as:
-
-```
-lista.m3u
-```
-
-Then run:
-
+Place your M3U list as `lista.m3u` then:
 ```bash
 node clean-m3u.js
 ```
 
----
-
-# 💾 Automatic saving
-
-The script:
-
-- Saves progress automatically
-- Creates backups
-- Allows closing with `CTRL + C`
-- Continues where it left off next time
-
----
-
-# Series compatibility
-
-The script automatically detects:
-
+**Before → After:**
 ```
-S01E01
-S02E05
-etc
-```
-
-and uses the correct IMDb ID for the entire series.
-
----
-
-# Expected result
-
-Before:
-
-```
+# Before
 #EXTINF:-1 tvg-name="Breaking Bad S01E01",Breaking Bad S01E01
-```
 
-After:
-
-```
+# After
 #EXTINF:-1 tvg-name="Breaking Bad" tvg-id="tt0903747",Breaking Bad
 ```
 
 ---
 
-# 🌐 Using your processed M3U list on Render
+## 🔗 Hosting your M3U list
 
-After adding IMDb IDs to your local list using `clean-m3u.js`, you'll need to upload the `.m3u` file to a service that allows direct link access.
+The addon needs a **direct download URL** for your M3U file.
 
-The addon will automatically download the list from that URL every time Render starts.
+| Service | Notes |
+|---|---|
+| **GitHub Releases** ✅ | Most stable. Direct download link. |
+| **Dropbox** | Change `?dl=0` to `?dl=1` at end of link |
+| **Google Drive** | Convert to `https://drive.google.com/uc?export=download&id=FILE_ID` |
+| **VPS / web hosting** | Any direct `.m3u` URL works |
 
----
-
-# Recommended services
-
-You can host your M3U list on:
-
-- GitHub Releases
-- Dropbox
-- Google Drive
-- VPS server
-- Web hosting
-- CDN
-- Your own IPTV servers
-
----
-
-# 🔗 Important: the URL must be DIRECT
-
-The addon needs a URL that downloads the file directly.
-
-Correct example:
-
-```
-https://server.com/lista.m3u
-```
-
-Incorrect example:
-
-```
-https://drive.google.com/file/d/xxxxx/view
-```
-
-Because that URL opens a web page and does NOT download the file directly.
-
-# GitHub Releases (Recommended)
-
-The most stable and simple way to host your M3U list is using GitHub Releases.
-
-## Steps
-
-1. Upload your file:
-
-```
-lista-progress.m3u
-```
-
-to your repository.
-
-2. Go to:
-
-```
-Releases → Create Release
-```
-
-3. Attach the `.m3u` file
-
-4. Publish the release
-
-5. Copy the direct link to the file
-
-Example:
-
-```
-https://github.com/username/repo/releases/download/iptv/lista-progress.m3u
-```
-
----
-
-# ☁ Google Drive
-
-Google Drive also works, but you must convert the shared link into a direct download link.
-
-## Get direct link
-
-Your normal link will look like this:
-
-```
-https://drive.google.com/file/d/FILE_ID/view
-```
-
-You need to extract the `FILE_ID` and convert it to:
-
-```
-https://drive.google.com/uc?export=download&id=FILE_ID
-```
-
----
-
-# ☁ Dropbox
-
-On Dropbox:
-
-1. Share the file
-2. Copy the link
-
-The link normally ends in:
-
-```
-?dl=0
-```
-
-Change it to:
-
-```
-?dl=1
-```
-
-or:
-
-```
-?raw=1
-```
-
-to force direct download.
-
----
-
-# Final result
-
-When Render starts:
-
-- It automatically downloads the list
-- Parses movies and series
-- Detects streams
-- Groups episodes
-- Loads IMDb IDs
-- Integrates streams directly into Stremio
-
----
-
-# 📁 Files used by the script
-
-| File                 | Description                          |
-| -------------------- | ------------------------------------ |
-| `lista.m3u`          | Original list (never modified)       |
-| `lista-progress.m3u` | Processed list with IMDb IDs         |
-| `lista-backup.m3u`   | Automatic backup                     |
-
----
-
-# 🔄 Updating the list
-
-Just update the remote M3U file.
-
-Render will automatically download the list on restart.
-
-To restart:
-
-1. Go to Render
-2. Open your Web Service
-3. Press:
-   - Manual Deploy
-   - Deploy latest commit
+> ⚠️ GitHub Releases URLs redirect to `objects.githubusercontent.com`. The Python version handles this automatically with `follow_redirects=True`. The Node.js version uses `axios` which also follows redirects by default.
 
 ---
 
 ## ❓ Common issues
 
-| Problem                          | Solution                                                    |
-| -------------------------------- | ----------------------------------------------------------- |
-| No movies appear                 | Check that the M3U URL is direct and accessible             |
-| IDs are not resolving            | Check your TMDB API Key in the form                         |
-| A title doesn't appear globally  | Open it from the catalog to force resolution                |
-| Ran out of Railway credit        | Free plan has $5/month — upgrade or switch to Render        |
+| Problem | Solution |
+|---|---|
+| No movies appear | Check that your M3U URL is direct and accessible |
+| IDs not resolving | Check your TMDB API Key in the form |
+| Title not appearing globally | Open it from the catalog to force resolution |
+| Render is slow to respond | Free plan sleeps after 15 min of inactivity |
+| Railway credit ran out | Free plan has $5/month — switch to Render or Hugging Face |
+| Hugging Face Space offline | Go to the Space settings and restart it |
