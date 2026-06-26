@@ -137,7 +137,6 @@ The addon stores each user's list and resolved IDs in memory.
 |---|---|
 | Railway | Never sleeps — cache lasts until restart |
 | Render (free) | Sleeps after 15 min — cache resets on wake |
-| Koyeb | Never sleeps — cache persists until restart |
 | Hugging Face | Never sleeps — cache persists until restart |
 | Fly.io | Never sleeps — cache persists until restart |
 
