@@ -2,8 +2,7 @@ app = "m3u-friendly"
 primary_region = "lhr"
 
 [build]
-  dockerfile = "python/Dockerfile"
-  context = "python"
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 7860
