@@ -3,6 +3,7 @@ primary_region = "lhr"
 
 [build]
   dockerfile = "python/Dockerfile"
+  context = "python"
 
 [http_service]
   internal_port = 7860
